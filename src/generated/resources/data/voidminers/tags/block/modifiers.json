@@ -1,0 +1,29 @@
+{
+  "values": [
+    "voidminers:rubetine_energy_modifier",
+    "voidminers:rubetine_speed_modifier",
+    "voidminers:rubetine_item_modifier",
+    "voidminers:aurantium_energy_modifier",
+    "voidminers:aurantium_speed_modifier",
+    "voidminers:aurantium_item_modifier",
+    "voidminers:citrinetine_energy_modifier",
+    "voidminers:citrinetine_speed_modifier",
+    "voidminers:citrinetine_item_modifier",
+    "voidminers:verdium_energy_modifier",
+    "voidminers:verdium_speed_modifier",
+    "voidminers:verdium_item_modifier",
+    "voidminers:azurine_energy_modifier",
+    "voidminers:azurine_speed_modifier",
+    "voidminers:azurine_item_modifier",
+    "voidminers:caerium_energy_modifier",
+    "voidminers:caerium_speed_modifier",
+    "voidminers:caerium_item_modifier",
+    "voidminers:amethystine_energy_modifier",
+    "voidminers:amethystine_speed_modifier",
+    "voidminers:amethystine_item_modifier",
+    "voidminers:rosarium_energy_modifier",
+    "voidminers:rosarium_speed_modifier",
+    "voidminers:rosarium_item_modifier",
+    "voidminers:null_modifier"
+  ]
+}
