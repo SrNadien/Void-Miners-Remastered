@@ -2,7 +2,7 @@ plugins {
     id 'eclipse'
     id 'idea'
     id 'maven-publish'
-    id 'net.neoforged.gradle.userdev' version '7.0.171'
+    id 'net.neoforged.moddev' version '2.0.143'
 }
 
 version = mcversion + "-" + mod_version + "-" + tag_lanzador
@@ -18,42 +18,49 @@ java {
     }
 }
 
-minecraft {
+neoForge {
+    // Version de NeoForge a usar (antes iba como dependency "net.neoforged:neoforge:...").
+    version = neoversion
+
     accessTransformers {
         file('src/main/resources/META-INF/accesstransformer.cfg')
     }
-}
 
-runs {
-    configureEach {
-        workingDirectory project.file('run')
-        
-        systemProperty 'forge.logging.markers', 'REGISTRIES'
-        systemProperty 'forge.logging.console.level', 'debug'
-        
-        modSource sourceSets.main
+    runs {
+        client {
+            client()
+            systemProperty 'neoforge.enabledGameTestNamespaces', mod_id
+        }
+
+        server {
+            server()
+            programArgument '--nogui'
+            systemProperty 'neoforge.enabledGameTestNamespaces', mod_id
+        }
+
+        gameTestServer {
+            type = "gameTestServer"
+            systemProperty 'neoforge.enabledGameTestNamespaces', mod_id
+        }
+
+        data {
+            data()
+            programArguments.addAll '--mod', mod_id,
+                                    '--all',
+                                    '--output', file('src/generated/resources/').getAbsolutePath(),
+                                    '--existing', file('src/main/resources/').getAbsolutePath()
+        }
+
+        configureEach {
+            systemProperty 'forge.logging.markers', 'REGISTRIES'
+            logLevel = org.slf4j.event.Level.DEBUG
+        }
     }
 
-    client {
-        systemProperty 'forge.enabledGameTestNamespaces', mod_id
-    }
-
-    server {
-        systemProperty 'forge.enabledGameTestNamespaces', mod_id
-        programArgument '--nogui'
-    }
-
-    gameTestServer {
-        systemProperty 'forge.enabledGameTestNamespaces', mod_id
-    }
-
-    data {
-        workingDirectory project.file('run-data')
-        
-        programArguments.addAll '--mod', mod_id, 
-                                '--all', 
-                                '--output', file('src/generated/resources/').getAbsolutePath(), 
-                                '--existing', file('src/main/resources/').getAbsolutePath()
+    mods {
+        "${mod_id}" {
+            sourceSet(sourceSets.main)
+        }
     }
 }
 
@@ -61,7 +68,7 @@ sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 repositories {
     mavenCentral()
-    
+
     maven {
         name = "Curse Maven"
         url = "https://cursemaven.com"
@@ -69,29 +76,28 @@ repositories {
             includeGroup "curse.maven"
         }
     }
-    
-   maven {
-        url = "https://maven.latvian.dev/releases"
-        content {
-            includeGroup "dev.latvian.mods"
-            includeGroup "dev.latvian.apps"
-        }
-    } 
-}  
+
+    maven {
+        name = "latviandevReleases"
+        url = uri("https://maven.latvian.dev/releases")
+    }
+
+    maven {
+        url 'https://jitpack.io'
+    }
+}
 
 dependencies {
-    implementation "net.neoforged:neoforge:${neoversion}"
-    
     compileOnly("dev.latvian.mods:rhino:$rhino_version")
     implementation ("dev.latvian.mods:kubejs-neoforge:${kubejs_version}")
-    
-    implementation "curse.maven:mangos-multiblock-library-revived-1406189:7342473"
-    
-    implementation "curse.maven:jei-238222:7270455"
-    implementation "curse.maven:athena-841890:6669522"
-    implementation "curse.maven:jade-324717:6853386"
-    implementation "curse.maven:pipez-443900:5609056"
-    implementation "curse.maven:mekanism-268560:7132168"
+
+    implementation "curse.maven:mangos-multiblock-library-revived-1406189:${mangomultiblock_version_id}"
+
+    implementation "curse.maven:jei-238222:8470023"
+    implementation "curse.maven:athena-841890:8061947"
+    implementation "curse.maven:jade-324717:7545219"
+    implementation "curse.maven:pipez-443900:8351631"
+    implementation "curse.maven:mekanism-268560:7904058"
     implementation "curse.maven:ctm-267602:5587515"
     implementation "curse.maven:immersive-engineering-231951:6733669"
 }
@@ -105,14 +111,17 @@ tasks.withType(ProcessResources).configureEach {
         loader_version_range: loader_version_range,
         mod_id: mod_id,
         mod_license: mod_license,
+        mod_name: mod_name,
+        mod_named: mod_named,
         mod_version: mod_version,
         mod_authors: mod_authors,
         mod_description: mod_description,
-        kubejs_version: kubejs_version
+        kubejs_version: kubejs_version,
+        mangomultiblock_version_id: mangomultiblock_version_id,
     ]
-    
+
     inputs.properties replaceProperties
-    
+
     filesMatching(['META-INF/neoforge.mods.toml', 'pack.mcmeta']) {
         expand replaceProperties + [project: project]
     }

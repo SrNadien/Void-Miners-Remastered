@@ -1,0 +1,9 @@
+{
+  "parent": "voidminersremastered:block/_template/quad_layer",
+  "textures": {
+    "layer0": "voidminersremastered:block/null/frame",
+    "layer1": "voidminersremastered:block/_core/frame",
+    "layer2": "voidminersremastered:block/_core/cover",
+    "layer3": "voidminersremastered:block/null/core"
+  }
+}

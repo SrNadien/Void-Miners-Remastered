@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "voidminersremastered:verdium"
+    },
+    "M": {
+      "item": "voidminersremastered:citrinetine_energy_modifier"
+    },
+    "c": {
+      "item": "minecraft:redstone"
+    }
+  },
+  "pattern": [
+    "CcC",
+    "cMc",
+    "CcC"
+  ],
+  "result": {
+    "count": 1,
+    "id": "voidminersremastered:verdium_energy_modifier"
+  }
+}

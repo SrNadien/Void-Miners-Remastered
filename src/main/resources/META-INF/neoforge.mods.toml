@@ -5,10 +5,10 @@ license="${mod_license}"
 [[mods]]
 modId="${mod_id}"
 version="${mod_version}"
-displayName="Void Miners Remastered"
+displayName="${mod_named}"
 updateJSONURL=""
-displayURL="https://github.com/SrNadien/VoidMiners"
-logoFile=""
+displayURL=""
+logoFile="logo.png"
 credits=""
 authors="${mod_authors}"
 
@@ -33,5 +33,12 @@ description='''${mod_description}'''
     modId="kubejs"
     type="optional"
    versionRange="[${kubejs_version},)"
+    ordering="AFTER"
+    side="BOTH"
+
+[[dependencies.${mod_id}]]
+    modId="mangomultiblock"
+    type="required"
+   versionRange="${mangomultiblock_version_id}"
     ordering="AFTER"
     side="BOTH"

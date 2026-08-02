@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "voidminersremastered:ultimate_stellar_core"
+    },
+    "S": {
+      "item": "minecraft:nether_star"
+    },
+    "T": {
+      "item": "voidminersremastered:max_storage_upgrade_t3"
+    }
+  },
+  "pattern": [
+    "CTC",
+    "TST",
+    "CCC"
+  ],
+  "result": {
+    "count": 1,
+    "id": "voidminersremastered:max_storage_upgrade_t3"
+  }
+}

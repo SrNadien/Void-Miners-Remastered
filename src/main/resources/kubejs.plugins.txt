@@ -1,1 +1,1 @@
-nadiendev.voidminers.common.compat.kubejs.VoidMinersKubeJSPlugin
+nadiendev.voidminersremastered.common.compat.kubejs.VoidMinersKubeJSPlugin

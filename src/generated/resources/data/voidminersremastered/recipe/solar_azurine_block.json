@@ -1,0 +1,37 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "voidminersremastered:solar_azurine"
+    },
+    {
+      "item": "voidminersremastered:solar_azurine"
+    },
+    {
+      "item": "voidminersremastered:solar_azurine"
+    },
+    {
+      "item": "voidminersremastered:solar_azurine"
+    },
+    {
+      "item": "voidminersremastered:solar_azurine"
+    },
+    {
+      "item": "voidminersremastered:solar_azurine"
+    },
+    {
+      "item": "voidminersremastered:solar_azurine"
+    },
+    {
+      "item": "voidminersremastered:solar_azurine"
+    },
+    {
+      "item": "voidminersremastered:solar_azurine"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "id": "voidminersremastered:solar_azurine_block"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "type": "voidminersremastered:miner",
+  "dimension": "minecraft:the_nether",
+  "minTier": 5,
+  "output": {
+    "stack": {
+      "count": 1,
+      "id": "voidminersremastered:caerium"
+    },
+    "weight": 4.0
+  }
+}

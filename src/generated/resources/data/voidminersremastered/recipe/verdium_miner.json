@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "item": "voidminersremastered:verdium_block"
+    },
+    "C": {
+      "item": "voidminersremastered:citrinetine_miner"
+    },
+    "G": {
+      "item": "minecraft:glass"
+    },
+    "O": {
+      "item": "minecraft:obsidian"
+    }
+  },
+  "pattern": [
+    "GGG",
+    "GCG",
+    "BOB"
+  ],
+  "result": {
+    "count": 1,
+    "id": "voidminersremastered:verdium_miner"
+  }
+}

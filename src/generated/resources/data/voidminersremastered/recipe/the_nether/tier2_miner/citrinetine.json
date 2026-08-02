@@ -1,0 +1,12 @@
+{
+  "type": "voidminersremastered:miner",
+  "dimension": "minecraft:the_nether",
+  "minTier": 2,
+  "output": {
+    "stack": {
+      "count": 1,
+      "id": "voidminersremastered:citrinetine"
+    },
+    "weight": 4.0
+  }
+}

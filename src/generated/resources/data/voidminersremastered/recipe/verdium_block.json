@@ -1,0 +1,37 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "voidminersremastered:verdium"
+    },
+    {
+      "item": "voidminersremastered:verdium"
+    },
+    {
+      "item": "voidminersremastered:verdium"
+    },
+    {
+      "item": "voidminersremastered:verdium"
+    },
+    {
+      "item": "voidminersremastered:verdium"
+    },
+    {
+      "item": "voidminersremastered:verdium"
+    },
+    {
+      "item": "voidminersremastered:verdium"
+    },
+    {
+      "item": "voidminersremastered:verdium"
+    },
+    {
+      "item": "voidminersremastered:verdium"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "id": "voidminersremastered:verdium_block"
+  }
+}

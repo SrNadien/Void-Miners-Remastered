@@ -1,0 +1,6 @@
+{
+  "parent": "voidminersremastered:block/miner_base",
+  "textures": {
+    "1": "voidminersremastered:block/amethystine/miner"
+  }
+}

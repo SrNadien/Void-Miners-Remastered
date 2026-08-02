@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "voidminersremastered:solar_rosarium"
+    },
+    "M": {
+      "item": "voidminersremastered:solar_amethystine_efficiency_modifier"
+    },
+    "r": {
+      "item": "minecraft:redstone_block"
+    }
+  },
+  "pattern": [
+    "CrC",
+    "rMr",
+    "CrC"
+  ],
+  "result": {
+    "count": 1,
+    "id": "voidminersremastered:solar_rosarium_efficiency_modifier"
+  }
+}

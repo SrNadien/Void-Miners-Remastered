@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "item": "voidminersremastered:solar_rubetine_block"
+    },
+    "C": {
+      "item": "minecraft:redstone_block"
+    },
+    "G": {
+      "item": "voidminersremastered:glass_panel"
+    },
+    "O": {
+      "item": "minecraft:daylight_detector"
+    }
+  },
+  "pattern": [
+    "GGG",
+    "GCG",
+    "BOB"
+  ],
+  "result": {
+    "count": 1,
+    "id": "voidminersremastered:solar_rubetine_panel"
+  }
+}

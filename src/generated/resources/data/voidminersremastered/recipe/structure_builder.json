@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": {
+      "item": "voidminersremastered:structure_panel"
+    },
+    "S": {
+      "item": "minecraft:stick"
+    }
+  },
+  "pattern": [
+    " P ",
+    "S  ",
+    "   "
+  ],
+  "result": {
+    "count": 1,
+    "id": "voidminersremastered:structure_builder"
+  }
+}

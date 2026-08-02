@@ -1,0 +1,37 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "voidminersremastered:aurantium"
+    },
+    {
+      "item": "voidminersremastered:aurantium"
+    },
+    {
+      "item": "voidminersremastered:aurantium"
+    },
+    {
+      "item": "voidminersremastered:aurantium"
+    },
+    {
+      "item": "voidminersremastered:aurantium"
+    },
+    {
+      "item": "voidminersremastered:aurantium"
+    },
+    {
+      "item": "voidminersremastered:aurantium"
+    },
+    {
+      "item": "voidminersremastered:aurantium"
+    },
+    {
+      "item": "voidminersremastered:aurantium"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "id": "voidminersremastered:aurantium_block"
+  }
+}

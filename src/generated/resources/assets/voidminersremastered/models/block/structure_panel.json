@@ -1,0 +1,7 @@
+{
+  "parent": "voidminersremastered:block/_template/dual_layer",
+  "textures": {
+    "layer0": "voidminersremastered:block/_core/panel",
+    "layer1": "voidminersremastered:block/_core/cover"
+  }
+}

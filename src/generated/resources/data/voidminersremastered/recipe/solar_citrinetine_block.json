@@ -1,0 +1,37 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "voidminersremastered:solar_citrinetine"
+    },
+    {
+      "item": "voidminersremastered:solar_citrinetine"
+    },
+    {
+      "item": "voidminersremastered:solar_citrinetine"
+    },
+    {
+      "item": "voidminersremastered:solar_citrinetine"
+    },
+    {
+      "item": "voidminersremastered:solar_citrinetine"
+    },
+    {
+      "item": "voidminersremastered:solar_citrinetine"
+    },
+    {
+      "item": "voidminersremastered:solar_citrinetine"
+    },
+    {
+      "item": "voidminersremastered:solar_citrinetine"
+    },
+    {
+      "item": "voidminersremastered:solar_citrinetine"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "id": "voidminersremastered:solar_citrinetine_block"
+  }
+}

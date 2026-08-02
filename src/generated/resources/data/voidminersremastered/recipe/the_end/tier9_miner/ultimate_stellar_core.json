@@ -1,0 +1,13 @@
+{
+  "type": "voidminersremastered:miner",
+  "allowHigherTiers": false,
+  "dimension": "minecraft:the_end",
+  "minTier": 9,
+  "output": {
+    "stack": {
+      "count": 1,
+      "id": "voidminersremastered:ultimate_stellar_core"
+    },
+    "weight": 1.0
+  }
+}

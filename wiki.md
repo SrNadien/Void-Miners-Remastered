@@ -303,3 +303,29 @@ ServerEvents.recipes(event => {
 - `'minecraft:the_nether'` - The Nether
 - `'minecraft:the_end'` - The End
 - Custom dimensions from mods (e.g., `'twilightforest:twilight_forest'`, `'the_bumblezone:the_bumblezone'`)
+
+---
+
+## Add Custom Max Storage Upgrades
+
+Location: `kubejs\startup_scripts`
+
+Example if you don't want to add a custom item:
+```javascript
+const $ModDataComponents = Java.loadClass("nadiendev.voidminersremastered.init.ModDataComponents");
+
+ItemEvents.modification(event => {
+  event.modify("minecraft:gold_ingot", item => {
+    item.set($ModDataComponents.MAX_STORAGE_UPGRADE_SLOTS.get(), 5); // change the 5 to the number of slots you want
+  });
+});
+```
+Example if you want to add a custom item:
+```javascript
+const $MaxStorageUpgradeItem = Java.loadClass("nadiendev.voidminersremastered.world.item.MaxStorageUpgradeItem");
+const $IProperties = Java.loadClass("net.minecraft.world.item.Item$Properties");
+
+StartupEvents.registry("item", event => {
+  event.createCustom("kubejs:custom_storage_upgrade", () => new $MaxStorageUpgradeItem(5, new $IProperties())) // change the 5 to the number of slots you want
+})
+```

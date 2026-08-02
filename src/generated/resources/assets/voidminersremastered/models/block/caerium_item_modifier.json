@@ -1,0 +1,9 @@
+{
+  "parent": "voidminersremastered:block/_template/quad_layer",
+  "textures": {
+    "layer0": "voidminersremastered:block/_core/item",
+    "layer1": "voidminersremastered:block/_core/modifier",
+    "layer2": "voidminersremastered:block/_core/cover",
+    "layer3": "voidminersremastered:block/caerium/core"
+  }
+}

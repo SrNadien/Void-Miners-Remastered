@@ -1,0 +1,12 @@
+{
+  "type": "voidminersremastered:miner",
+  "dimension": "minecraft:overworld",
+  "minTier": 3,
+  "output": {
+    "stack": {
+      "count": 1,
+      "id": "voidminersremastered:verdium"
+    },
+    "weight": 2.0
+  }
+}

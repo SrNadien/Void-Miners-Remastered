@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "item": "voidminersremastered:ultimate_block"
+    },
+    "F": {
+      "item": "voidminersremastered:rosarium_frame"
+    },
+    "N": {
+      "item": "minecraft:nether_star"
+    },
+    "O": {
+      "item": "minecraft:obsidian"
+    }
+  },
+  "pattern": [
+    "BOB",
+    "OFO",
+    "BNB"
+  ],
+  "result": {
+    "count": 1,
+    "id": "voidminersremastered:ultimate_frame"
+  }
+}

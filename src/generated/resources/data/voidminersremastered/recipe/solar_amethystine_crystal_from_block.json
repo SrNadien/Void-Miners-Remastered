@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "voidminersremastered:solar_amethystine_block"
+    }
+  ],
+  "result": {
+    "count": 9,
+    "id": "voidminersremastered:solar_amethystine"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "F": {
+      "item": "voidminersremastered:solar_azurine_frame"
+    },
+    "G": {
+      "item": "minecraft:gold_ingot"
+    },
+    "I": {
+      "item": "voidminersremastered:solar_caerium"
+    }
+  },
+  "pattern": [
+    "IGI",
+    "GFG",
+    "IGI"
+  ],
+  "result": {
+    "count": 1,
+    "id": "voidminersremastered:solar_caerium_frame"
+  }
+}

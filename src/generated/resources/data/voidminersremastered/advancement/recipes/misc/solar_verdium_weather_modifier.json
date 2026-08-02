@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "hasItem": {
+      "conditions": {
+        "items": [
+          {
+            "items": "voidminersremastered:null_modifier"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "voidminersremastered:solar_verdium_weather_modifier"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "hasItem"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "voidminersremastered:solar_verdium_weather_modifier"
+    ]
+  }
+}

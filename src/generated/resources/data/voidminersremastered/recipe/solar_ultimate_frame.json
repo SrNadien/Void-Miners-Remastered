@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "item": "minecraft:nether_star"
+    },
+    "F": {
+      "item": "voidminersremastered:solar_rosarium_frame"
+    },
+    "O": {
+      "item": "minecraft:gold_ingot"
+    }
+  },
+  "pattern": [
+    "BOB",
+    "OFO",
+    "BOB"
+  ],
+  "result": {
+    "count": 1,
+    "id": "voidminersremastered:solar_ultimate_frame"
+  }
+}

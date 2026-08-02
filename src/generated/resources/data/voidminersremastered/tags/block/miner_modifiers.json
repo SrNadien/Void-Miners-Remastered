@@ -1,0 +1,32 @@
+{
+  "values": [
+    "voidminersremastered:rubetine_energy_modifier",
+    "voidminersremastered:rubetine_speed_modifier",
+    "voidminersremastered:rubetine_item_modifier",
+    "voidminersremastered:aurantium_energy_modifier",
+    "voidminersremastered:aurantium_speed_modifier",
+    "voidminersremastered:aurantium_item_modifier",
+    "voidminersremastered:citrinetine_energy_modifier",
+    "voidminersremastered:citrinetine_speed_modifier",
+    "voidminersremastered:citrinetine_item_modifier",
+    "voidminersremastered:verdium_energy_modifier",
+    "voidminersremastered:verdium_speed_modifier",
+    "voidminersremastered:verdium_item_modifier",
+    "voidminersremastered:azurine_energy_modifier",
+    "voidminersremastered:azurine_speed_modifier",
+    "voidminersremastered:azurine_item_modifier",
+    "voidminersremastered:caerium_energy_modifier",
+    "voidminersremastered:caerium_speed_modifier",
+    "voidminersremastered:caerium_item_modifier",
+    "voidminersremastered:amethystine_energy_modifier",
+    "voidminersremastered:amethystine_speed_modifier",
+    "voidminersremastered:amethystine_item_modifier",
+    "voidminersremastered:rosarium_energy_modifier",
+    "voidminersremastered:rosarium_speed_modifier",
+    "voidminersremastered:rosarium_item_modifier",
+    "voidminersremastered:ultimate_energy_modifier",
+    "voidminersremastered:ultimate_speed_modifier",
+    "voidminersremastered:ultimate_item_modifier",
+    "voidminersremastered:null_modifier"
+  ]
+}

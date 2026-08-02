@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "item": "voidminersremastered:solar_azurine_block"
+    },
+    "C": {
+      "item": "voidminersremastered:solar_verdium_panel"
+    },
+    "G": {
+      "item": "voidminersremastered:glass_panel"
+    },
+    "O": {
+      "item": "minecraft:daylight_detector"
+    }
+  },
+  "pattern": [
+    "GGG",
+    "GCG",
+    "BOB"
+  ],
+  "result": {
+    "count": 1,
+    "id": "voidminersremastered:solar_azurine_panel"
+  }
+}
