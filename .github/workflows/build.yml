@@ -3,7 +3,7 @@ name: Build and Release
 on:
   push:
     branches:
-      - "Neo/26.1.2"
+      - "Neo/1.21.1"
     paths:
       - "src/**/*.java"
 jobs:
