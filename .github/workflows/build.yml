@@ -4,8 +4,8 @@ on:
   push:
     branches:
       - "Neo/26.1.2"
-    paths:
-      - "src/**/*.java"
+    # paths:
+    #   - "src/**/*.java"
 jobs:
   build:
     runs-on: ubuntu-latest
