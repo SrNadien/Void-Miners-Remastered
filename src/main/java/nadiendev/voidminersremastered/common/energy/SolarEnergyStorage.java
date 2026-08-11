@@ -1,129 +1,196 @@
 package nadiendev.voidminersremastered.common.energy;
 
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
-import net.neoforged.neoforge.energy.EnergyStorage;
+import com.google.common.primitives.Ints;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.neoforged.neoforge.common.util.ValueIOSerializable;
+import net.neoforged.neoforge.transfer.TransferPreconditions;
+import net.neoforged.neoforge.transfer.energy.EnergyHandler;
+import net.neoforged.neoforge.transfer.transaction.SnapshotJournal;
+import net.neoforged.neoforge.transfer.transaction.TransactionContext;
 
-public class SolarEnergyStorage extends EnergyStorage {
-    private long longCapacity;
-    private long longEnergy;
+/**
+ * Energy buffer of the solar controller.
+ *
+ * <p>In 1.21.1 this class extended the (now deprecated) {@code net.neoforged.neoforge.energy.EnergyStorage}
+ * and faked 64-bit storage by keeping a shadow {@code long} next to the {@code int} of the superclass.
+ * In 26.1.2 the capability type is {@code net.neoforged.neoforge.transfer.energy.EnergyHandler}, whose
+ * amount/capacity are natively {@code long}, so the class now implements it directly and the duplicated
+ * {@code int} state is gone. Only the per-operation transfer amounts stay {@code int}, because
+ * {@code EnergyHandler#insert}/{@code #extract} are {@code int}-based.
+ *
+ * <p>NBT is unchanged: {@link #serialize(ValueOutput)} writes the very same {@code {energy: long,
+ * capacity: long}} compound the 1.21.1 {@code serializeNBT} produced.
+ */
+public class SolarEnergyStorage implements EnergyHandler, ValueIOSerializable {
+
+    protected long longCapacity;
+    protected long longEnergy;
+    protected long maxReceive;
+    protected long maxExtract;
+
+    private final EnergyJournal energyJournal = new EnergyJournal();
 
     public SolarEnergyStorage(long capacity) {
-        super(capacity > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int)capacity);
-        this.longCapacity = capacity;
-        this.longEnergy = 0;
+        this(capacity, capacity, capacity, 0L);
     }
 
     public SolarEnergyStorage(long capacity, long maxTransfer) {
-        super(capacity > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int)capacity,
-                maxTransfer > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int)maxTransfer);
-        this.longCapacity = capacity;
-        this.longEnergy = 0;
+        this(capacity, maxTransfer, maxTransfer, 0L);
     }
 
     public SolarEnergyStorage(long capacity, long maxReceive, long maxExtract) {
-        super(capacity > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int)capacity,
-                maxReceive > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int)maxReceive,
-                maxExtract > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int)maxExtract);
-        this.longCapacity = capacity;
-        this.longEnergy = 0;
+        this(capacity, maxReceive, maxExtract, 0L);
     }
 
     public SolarEnergyStorage(long capacity, long maxReceive, long maxExtract, long energy) {
-        super(capacity > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int)capacity,
-                maxReceive > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int)maxReceive,
-                maxExtract > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int)maxExtract,
-                energy > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int)energy);
-        this.longCapacity = capacity;
-        this.longEnergy = energy;
+        this.longCapacity = Math.max(0L, capacity);
+        this.maxReceive = Math.max(0L, maxReceive);
+        this.maxExtract = Math.max(0L, maxExtract);
+        this.longEnergy = Math.max(0L, Math.min(this.longCapacity, energy));
     }
 
+    // ------------------------------------------------------------------ EnergyHandler
+
+    @Override
+    public long getAmountAsLong() {
+        return this.longEnergy;
+    }
+
+    @Override
+    public long getCapacityAsLong() {
+        return this.longCapacity;
+    }
+
+    @Override
+    public int insert(int amount, TransactionContext transaction) {
+        TransferPreconditions.checkNonNegative(amount);
+
+        long inserted = Math.min(this.longCapacity - this.longEnergy, Math.min(amount, this.maxReceive));
+        if (inserted > 0L) {
+            this.energyJournal.updateSnapshots(transaction);
+            this.longEnergy += inserted;
+            return (int) inserted;
+        }
+        return 0;
+    }
+
+    @Override
+    public int extract(int amount, TransactionContext transaction) {
+        TransferPreconditions.checkNonNegative(amount);
+
+        long extracted = Math.min(this.longEnergy, Math.min(amount, this.maxExtract));
+        if (extracted > 0L) {
+            this.energyJournal.updateSnapshots(transaction);
+            this.longEnergy -= extracted;
+            return (int) extracted;
+        }
+        return 0;
+    }
+
+    // ------------------------------------------------------------------ ValueIOSerializable
+
+    @Override
+    public void serialize(ValueOutput output) {
+        output.putLong("energy", this.longEnergy);
+        output.putLong("capacity", this.longCapacity);
+    }
+
+    @Override
+    public void deserialize(ValueInput input) {
+        this.longCapacity = Math.max(0L, input.getLongOr("capacity", this.longCapacity));
+        this.longEnergy = Math.max(0L, input.getLongOr("energy", 0L));
+    }
+
+    // ------------------------------------------------------------------ 64-bit API (unchanged)
+
     public long getLongEnergyStored() {
-        return longEnergy;
+        return this.longEnergy;
     }
 
     public long getLongMaxEnergyStored() {
-        return longCapacity;
+        return this.longCapacity;
+    }
+
+    /** Saturating {@code int} view, kept so legacy call sites keep compiling. */
+    public int getEnergyStored() {
+        return Ints.saturatedCast(this.longEnergy);
+    }
+
+    /** Saturating {@code int} view, kept so legacy call sites keep compiling. */
+    public int getMaxEnergyStored() {
+        return Ints.saturatedCast(this.longCapacity);
     }
 
     public void addLongEnergy(long add) {
-        if ((this.longEnergy + add) < 0) {
+        long previous = this.longEnergy;
+        if ((this.longEnergy + add) < 0L) {
             this.longEnergy = this.longCapacity;
         } else {
             this.longEnergy = Math.min(this.longCapacity, this.longEnergy + add);
         }
-        this.energy = longEnergy > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int)longEnergy;
+        if (previous != this.longEnergy) {
+            onEnergyChanged(previous);
+        }
     }
 
     public void removeLongEnergy(long remove) {
-        this.longEnergy = Math.max(0, this.longEnergy - remove);
-        this.energy = longEnergy > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int)longEnergy;
+        long previous = this.longEnergy;
+        this.longEnergy = Math.max(0L, this.longEnergy - remove);
+        if (previous != this.longEnergy) {
+            onEnergyChanged(previous);
+        }
     }
 
     public void setLongCapacity(long capacity) {
-        this.longCapacity = capacity;
+        long previous = this.longEnergy;
+        this.longCapacity = Math.max(0L, capacity);
         this.longEnergy = Math.min(this.longEnergy, this.longCapacity);
-        this.capacity = this.longCapacity > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int)longCapacity;
+        if (previous != this.longEnergy) {
+            onEnergyChanged(previous);
+        }
     }
 
     public void setLongEnergy(long energy) {
-        this.longEnergy = Math.max(0, Math.min(longCapacity, energy));
-        this.energy = longEnergy > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int)longEnergy;
-    }
-
-    @Override
-    public int receiveEnergy(int maxReceive, boolean simulate) {
-        if (!canReceive()) return 0;
-
-        int receivable = Math.min(maxReceive, this.maxReceive);
-        long longReceivable = Math.min(receivable, longCapacity - longEnergy);
-
-        if (!simulate && longReceivable > 0) {
-            longEnergy += longReceivable;
-            this.energy = longEnergy > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) longEnergy;
+        long previous = this.longEnergy;
+        this.longEnergy = Math.max(0L, Math.min(this.longCapacity, energy));
+        if (previous != this.longEnergy) {
+            onEnergyChanged(previous);
         }
-        return (int) longReceivable;
     }
 
-    @Override
-    public int extractEnergy(int maxExtract, boolean simulate) {
-        if (!canExtract()) return 0;
+    public long getLongMaxReceive() {
+        return this.maxReceive;
+    }
 
-        int extractable = Math.min(maxExtract, this.maxExtract);
-        long longExtractable = Math.min(extractable, longEnergy);
+    public long getLongMaxExtract() {
+        return this.maxExtract;
+    }
 
-        if (!simulate && longExtractable > 0) {
-            longEnergy -= longExtractable;
-            this.energy = longEnergy > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) longEnergy;
+    /**
+     * Called after the stored amount changed. For changes made through {@link #insert}/{@link #extract}
+     * this runs when the root transaction commits; for the direct setters it runs immediately.
+     */
+    protected void onEnergyChanged(long previousAmount) {}
+
+    /** Makes {@link #insert}/{@link #extract} honour transaction rollback. */
+    private class EnergyJournal extends SnapshotJournal<Long> {
+        @Override
+        protected Long createSnapshot() {
+            return longEnergy;
         }
-        return (int) longExtractable;
-    }
 
-    @Override
-    public Tag serializeNBT(HolderLookup.Provider provider) {
-        CompoundTag tag = new CompoundTag();
-        tag.putLong("energy", longEnergy);
-        tag.putLong("capacity", longCapacity);
-        return tag;
-    }
+        @Override
+        protected void revertToSnapshot(Long snapshot) {
+            longEnergy = snapshot;
+        }
 
-    @Override
-    public void deserializeNBT(HolderLookup.Provider provider, Tag nbt) {
-        if (!(nbt instanceof CompoundTag tag))
-            return;
-
-        this.longEnergy = tag.getLong("energy");
-        this.longCapacity = tag.getLong("capacity");
-
-        this.energy =
-                longEnergy > Integer.MAX_VALUE
-                        ? Integer.MAX_VALUE
-                        : (int) longEnergy;
-
-        this.capacity =
-                longCapacity > Integer.MAX_VALUE
-                        ? Integer.MAX_VALUE
-                        : (int) longCapacity;
+        @Override
+        protected void onRootCommit(Long originalState) {
+            long previousAmount = originalState;
+            if (longEnergy != previousAmount) {
+                onEnergyChanged(previousAmount);
+            }
+        }
     }
 }

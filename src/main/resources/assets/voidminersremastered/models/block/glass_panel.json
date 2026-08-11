@@ -1,6 +1,9 @@
 {
   "parent": "minecraft:block/cube_all",
   "textures": {
-    "all": "voidminersremastered:block/_core/glass"
+    "all": {
+      "sprite": "voidminersremastered:block/_core/glass",
+      "force_translucent": true
+    }
   }
 }

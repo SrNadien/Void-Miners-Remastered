@@ -10,18 +10,22 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+
+import java.util.function.Consumer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -173,28 +177,33 @@ public class StructureBuilderItem extends Item {
         List<Component> tooltip = new ArrayList<>();
 
         if(blocksInTheWay) {
-            tooltip.add(Component.translatable("tooltip.voidminers.structure_builder.unable_to_place_multiblock.1").withStyle(ChatFormatting.RED));
-            tooltip.add(Component.translatable("tooltip.voidminers.structure_builder.unable_to_place_multiblock.2").withStyle(ChatFormatting.YELLOW));
+            tooltip.add(Component.translatable("tooltip.voidminersremastered.structure_builder.unable_to_place_multiblock.1").withStyle(ChatFormatting.RED));
+            tooltip.add(Component.translatable("tooltip.voidminersremastered.structure_builder.unable_to_place_multiblock.2").withStyle(ChatFormatting.YELLOW));
         }
 
         if(missingBlocksInInventory) {
-            tooltip.add(Component.translatable("tooltip.voidminers.structure_builder.missing_block_in_inventory").withStyle(ChatFormatting.RED));
+            tooltip.add(Component.translatable("tooltip.voidminersremastered.structure_builder.missing_block_in_inventory").withStyle(ChatFormatting.RED));
 
             for (ItemStack stack : missingBlocks) {
-                String blockName = Language.getInstance().getOrDefault(stack.getDescriptionId());
+                // ItemStack#getDescriptionId is gone in 26.1.2; the id now lives on the Item.
+                String blockName = Language.getInstance().getOrDefault(stack.getItem().getDescriptionId());
                 if(blockName.contains("Null")) blockName = "Modifier";
                 tooltip.add(Component.literal(stack.getCount() + "x " + blockName).withStyle(ChatFormatting.YELLOW));
             }
         }
 
         for (Component component : tooltip) {
-            pPlayer.displayClientMessage(component, false);
+            // Player#displayClientMessage is gone in 26.1.2; this path is always server-side.
+            if (pPlayer instanceof ServerPlayer serverPlayer) {
+                serverPlayer.sendSystemMessage(component, false);
+            }
         }
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
-        tooltipComponents.add(Component.translatable("tooltip.voidminers.structure_builder.instructions").withStyle(ChatFormatting.LIGHT_PURPLE));
-        super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
+    public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display,
+                                Consumer<Component> tooltipAdder, TooltipFlag tooltipFlag) {
+        tooltipAdder.accept(Component.translatable("tooltip.voidminersremastered.structure_builder.instructions").withStyle(ChatFormatting.LIGHT_PURPLE));
+        super.appendHoverText(stack, context, display, tooltipAdder, tooltipFlag);
     }
 }

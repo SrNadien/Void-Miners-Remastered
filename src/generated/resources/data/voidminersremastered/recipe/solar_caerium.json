@@ -2,15 +2,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "C": {
-      "item": "voidminersremastered:caerium"
-    },
-    "P": {
-      "item": "voidminersremastered:solar_azurine"
-    },
-    "c": {
-      "item": "minecraft:glowstone_dust"
-    }
+    "C": "voidminersremastered:caerium",
+    "P": "voidminersremastered:solar_azurine",
+    "c": "minecraft:glowstone_dust"
   },
   "pattern": [
     "CcC",

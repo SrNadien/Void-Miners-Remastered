@@ -2,15 +2,10 @@
   "type": "minecraft:crafting_shapeless",
   "category": "misc",
   "ingredients": [
-    {
-      "item": "voidminersremastered:structure_panel"
-    },
-    {
-      "item": "minecraft:glass"
-    }
+    "voidminersremastered:structure_panel",
+    "minecraft:glass"
   ],
   "result": {
-    "count": 1,
     "id": "voidminersremastered:glass_panel"
   }
 }

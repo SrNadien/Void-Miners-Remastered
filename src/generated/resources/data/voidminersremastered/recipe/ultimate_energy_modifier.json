@@ -2,15 +2,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "C": {
-      "item": "voidminersremastered:ultimate_block"
-    },
-    "M": {
-      "item": "voidminersremastered:rosarium_energy_modifier"
-    },
-    "c": {
-      "item": "minecraft:redstone"
-    }
+    "C": "voidminersremastered:ultimate_block",
+    "M": "voidminersremastered:rosarium_energy_modifier",
+    "c": "minecraft:redstone"
   },
   "pattern": [
     "CcC",
@@ -18,7 +12,6 @@
     "CcC"
   ],
   "result": {
-    "count": 1,
     "id": "voidminersremastered:ultimate_energy_modifier"
   }
 }

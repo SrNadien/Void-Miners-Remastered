@@ -2,36 +2,17 @@
   "type": "minecraft:crafting_shapeless",
   "category": "misc",
   "ingredients": [
-    {
-      "item": "voidminersremastered:solar_rosarium"
-    },
-    {
-      "item": "voidminersremastered:solar_rosarium"
-    },
-    {
-      "item": "voidminersremastered:solar_rosarium"
-    },
-    {
-      "item": "voidminersremastered:solar_rosarium"
-    },
-    {
-      "item": "voidminersremastered:solar_rosarium"
-    },
-    {
-      "item": "voidminersremastered:solar_rosarium"
-    },
-    {
-      "item": "voidminersremastered:solar_rosarium"
-    },
-    {
-      "item": "voidminersremastered:solar_rosarium"
-    },
-    {
-      "item": "voidminersremastered:solar_rosarium"
-    }
+    "voidminersremastered:solar_rosarium",
+    "voidminersremastered:solar_rosarium",
+    "voidminersremastered:solar_rosarium",
+    "voidminersremastered:solar_rosarium",
+    "voidminersremastered:solar_rosarium",
+    "voidminersremastered:solar_rosarium",
+    "voidminersremastered:solar_rosarium",
+    "voidminersremastered:solar_rosarium",
+    "voidminersremastered:solar_rosarium"
   ],
   "result": {
-    "count": 1,
     "id": "voidminersremastered:solar_rosarium_block"
   }
 }

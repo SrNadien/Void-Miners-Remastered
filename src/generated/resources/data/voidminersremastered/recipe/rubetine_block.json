@@ -2,36 +2,17 @@
   "type": "minecraft:crafting_shapeless",
   "category": "misc",
   "ingredients": [
-    {
-      "item": "voidminersremastered:rubetine"
-    },
-    {
-      "item": "voidminersremastered:rubetine"
-    },
-    {
-      "item": "voidminersremastered:rubetine"
-    },
-    {
-      "item": "voidminersremastered:rubetine"
-    },
-    {
-      "item": "voidminersremastered:rubetine"
-    },
-    {
-      "item": "voidminersremastered:rubetine"
-    },
-    {
-      "item": "voidminersremastered:rubetine"
-    },
-    {
-      "item": "voidminersremastered:rubetine"
-    },
-    {
-      "item": "voidminersremastered:rubetine"
-    }
+    "voidminersremastered:rubetine",
+    "voidminersremastered:rubetine",
+    "voidminersremastered:rubetine",
+    "voidminersremastered:rubetine",
+    "voidminersremastered:rubetine",
+    "voidminersremastered:rubetine",
+    "voidminersremastered:rubetine",
+    "voidminersremastered:rubetine",
+    "voidminersremastered:rubetine"
   ],
   "result": {
-    "count": 1,
     "id": "voidminersremastered:rubetine_block"
   }
 }

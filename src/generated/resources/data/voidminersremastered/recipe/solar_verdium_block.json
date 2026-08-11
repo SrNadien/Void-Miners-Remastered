@@ -2,36 +2,17 @@
   "type": "minecraft:crafting_shapeless",
   "category": "misc",
   "ingredients": [
-    {
-      "item": "voidminersremastered:solar_verdium"
-    },
-    {
-      "item": "voidminersremastered:solar_verdium"
-    },
-    {
-      "item": "voidminersremastered:solar_verdium"
-    },
-    {
-      "item": "voidminersremastered:solar_verdium"
-    },
-    {
-      "item": "voidminersremastered:solar_verdium"
-    },
-    {
-      "item": "voidminersremastered:solar_verdium"
-    },
-    {
-      "item": "voidminersremastered:solar_verdium"
-    },
-    {
-      "item": "voidminersremastered:solar_verdium"
-    },
-    {
-      "item": "voidminersremastered:solar_verdium"
-    }
+    "voidminersremastered:solar_verdium",
+    "voidminersremastered:solar_verdium",
+    "voidminersremastered:solar_verdium",
+    "voidminersremastered:solar_verdium",
+    "voidminersremastered:solar_verdium",
+    "voidminersremastered:solar_verdium",
+    "voidminersremastered:solar_verdium",
+    "voidminersremastered:solar_verdium",
+    "voidminersremastered:solar_verdium"
   ],
   "result": {
-    "count": 1,
     "id": "voidminersremastered:solar_verdium_block"
   }
 }

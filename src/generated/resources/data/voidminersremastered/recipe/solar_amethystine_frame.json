@@ -2,15 +2,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "F": {
-      "item": "voidminersremastered:solar_caerium_frame"
-    },
-    "G": {
-      "item": "minecraft:gold_ingot"
-    },
-    "I": {
-      "item": "voidminersremastered:solar_amethystine"
-    }
+    "F": "voidminersremastered:solar_caerium_frame",
+    "G": "minecraft:gold_ingot",
+    "I": "voidminersremastered:solar_amethystine"
   },
   "pattern": [
     "IGI",
@@ -18,7 +12,6 @@
     "IGI"
   ],
   "result": {
-    "count": 1,
     "id": "voidminersremastered:solar_amethystine_frame"
   }
 }

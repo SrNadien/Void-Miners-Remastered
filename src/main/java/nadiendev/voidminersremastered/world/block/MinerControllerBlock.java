@@ -5,10 +5,11 @@ import nadiendev.voidminersremastered.util.CustomColorUtil;
 import nadiendev.voidminersremastered.world.block.entity.MinerControllerBE;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
@@ -25,25 +26,35 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 
 public class MinerControllerBlock extends ColoredBlock implements EntityBlock {
-    final ResourceLocation structure;
+    final Identifier structure;
     final String name;
 
-    public MinerControllerBlock(Properties pProperties, ResourceLocation structure, String name, CustomColorUtil color) {
+    public MinerControllerBlock(Properties pProperties, Identifier structure, String name, CustomColorUtil color) {
         super(pProperties, color);
         this.structure = structure;
         this.name = name;
     }
 
+    // 26.1.2 replaced onRemove with affectNeighborsAfterRemoval, which only fires when the block
+    // actually changed, so the old pState/pNewState comparison is no longer needed.
     @Override
-    protected void onRemove(BlockState pState, Level pLevel, BlockPos pPos, BlockState pNewState, boolean pMoving) {
-        if (pState.getBlock() != pNewState.getBlock()) {
-            BlockEntity blockEntity = pLevel.getBlockEntity(pPos);
-            if (blockEntity instanceof MinerControllerBE controllerBE) {
-                controllerBE.drops();
-            }
+    protected void affectNeighborsAfterRemoval(BlockState pState, ServerLevel pLevel, BlockPos pPos, boolean pMovedByPiston) {
+        BlockEntity blockEntity = pLevel.getBlockEntity(pPos);
+        if (blockEntity instanceof MinerControllerBE controllerBE) {
+            controllerBE.drops();
         }
 
-        super.onRemove(pState, pLevel, pPos, pNewState, pMoving);
+        super.affectNeighborsAfterRemoval(pState, pLevel, pPos, pMovedByPiston);
+    }
+
+    /**
+     * Player#displayClientMessage is gone in 26.1.2; the overlay flag now lives on
+     * ServerPlayer#sendSystemMessage. These calls always run server-side.
+     */
+    private static void message(Player player, Component component, boolean actionBar) {
+        if (player instanceof ServerPlayer serverPlayer) {
+            serverPlayer.sendSystemMessage(component, actionBar);
+        }
     }
 
     @Nullable
@@ -56,7 +67,7 @@ public class MinerControllerBlock extends ColoredBlock implements EntityBlock {
     protected InteractionResult useWithoutItem(BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, BlockHitResult pHitResult) {
         MinerControllerBE blockEntity = (MinerControllerBE) pLevel.getBlockEntity(pPos);
 
-        if (pLevel.isClientSide) {
+        if (pLevel.isClientSide()) {
             return InteractionResult.SUCCESS;
         }
 
@@ -69,7 +80,7 @@ public class MinerControllerBlock extends ColoredBlock implements EntityBlock {
 
         if (blockEntity != null) {
             for (Component component : blockEntity.getInteractionTooltip()) {
-                pPlayer.displayClientMessage(component, false);
+                message(pPlayer, component, false);
             }
         }
 
@@ -77,16 +88,16 @@ public class MinerControllerBlock extends ColoredBlock implements EntityBlock {
     }
 
     @Override
-    protected ItemInteractionResult useItemOn(ItemStack pStack, BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand pHand, BlockHitResult pHitResult) {
+    protected InteractionResult useItemOn(ItemStack pStack, BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand pHand, BlockHitResult pHitResult) {
         MinerControllerBE blockEntity = (MinerControllerBE) pLevel.getBlockEntity(pPos);
 
-        if (pLevel.isClientSide) {
-            return ItemInteractionResult.sidedSuccess(pLevel.isClientSide());
+        if (pLevel.isClientSide()) {
+            return InteractionResult.SUCCESS;
         }
 
         if(pStack.getItem().components().get(ModDataComponents.MAX_STORAGE_UPGRADE_SLOTS.get()) != null) {
             handleUpgrade(blockEntity, pPlayer, pStack, pHand, pLevel, pState, pPos);
-            return ItemInteractionResult.CONSUME;
+            return InteractionResult.CONSUME;
         }
 
         return super.useItemOn(pStack, pState, pLevel, pPos, pPlayer, pHand, pHitResult);
@@ -97,7 +108,7 @@ public class MinerControllerBlock extends ColoredBlock implements EntityBlock {
         Item newUpgradeItem = pStack.getItem();
 
         if (currentUpgradeItem == newUpgradeItem) {
-            pPlayer.displayClientMessage(Component.translatable("client_message.voidminers.max_storage_upgrades.upgrade_already_applied"), true);
+            message(pPlayer, Component.translatable("client_message.voidminersremastered.max_storage_upgrades.upgrade_already_applied"), true);
             return;
         }
 
@@ -113,7 +124,7 @@ public class MinerControllerBlock extends ColoredBlock implements EntityBlock {
             int currentAddedSlots = currentUpgradeItem.components().get(ModDataComponents.MAX_STORAGE_UPGRADE_SLOTS.get());
 
             if (currentAddedSlots > newAddedSlots) {
-                pPlayer.displayClientMessage(Component.translatable("client_message.voidminers.max_storage_upgrades.upgrade_already_applied_is_higher_tier"), true);
+                message(pPlayer, Component.translatable("client_message.voidminersremastered.max_storage_upgrades.upgrade_already_applied_is_higher_tier"), true);
                 return;
             }
         }
@@ -137,7 +148,7 @@ public class MinerControllerBlock extends ColoredBlock implements EntityBlock {
             blockEntity.getLevel().sendBlockUpdated(pPos, pState, pState, 3);
         }
 
-        pPlayer.displayClientMessage(Component.translatable("client_message.voidminers.max_storage_upgrades.upgrade_applied", newAddedSlots), true);
+        message(pPlayer, Component.translatable("client_message.voidminersremastered.max_storage_upgrades.upgrade_applied", newAddedSlots), true);
     }
 
     @Override

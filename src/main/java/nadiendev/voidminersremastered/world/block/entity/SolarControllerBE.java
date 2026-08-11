@@ -17,24 +17,36 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.pattern.BlockInWorld;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.energy.IEnergyStorage;
+import net.neoforged.neoforge.transfer.energy.EnergyHandler;
+import net.neoforged.neoforge.transfer.energy.EnergyHandlerUtil;
 import org.jetbrains.annotations.Nullable;
-import org.mangorage.mangomultiblock.core.manager.MultiBlockManager;
-import org.mangorage.mangomultiblock.core.manager.RegisteredMultiBlockPattern;
-import org.mangorage.mangomultiblock.core.misc.MultiblockMatchResult;
+import nadiendev.mangomultiblock.core.manager.MultiBlockManager;
+import nadiendev.mangomultiblock.core.manager.RegisteredMultiBlockPattern;
+import nadiendev.mangomultiblock.core.misc.MultiblockMatchResult;
 
 import java.util.*;
 
 public class SolarControllerBE extends BlockEntity {
-    private SolarEnergyStorage energyHandler = new SolarEnergyStorage(Long.MAX_VALUE, 0, Long.MAX_VALUE, 0);
+    private SolarEnergyStorage energyHandler = createEnergyStorage(Long.MAX_VALUE, 0, Long.MAX_VALUE, 0);
+
+    private SolarEnergyStorage createEnergyStorage(long capacity, long maxReceive, long maxExtract, long energy) {
+        return new SolarEnergyStorage(capacity, maxReceive, maxExtract, energy) {
+            @Override
+            protected void onEnergyChanged(long previousAmount) {
+                SolarControllerBE.this.setChanged();
+            }
+        };
+    }
 
     public boolean foundStructure = false;
 
@@ -42,7 +54,7 @@ public class SolarControllerBE extends BlockEntity {
 
     private final Map<BlockInWorld, SolarConfigLoader.ModifierConfig> modifierMap = new HashMap<>();
 
-    private ResourceLocation structure;
+    private Identifier structure;
     private String name;
 
     private long lastProcessedGameTime = Long.MIN_VALUE;
@@ -57,7 +69,7 @@ public class SolarControllerBE extends BlockEntity {
         super(ModBlockEntities.SOLAR_BASE_BE.get(), pPos, pBlockState);
     }
 
-    public void setup(ResourceLocation structure, String name) {
+    public void setup(Identifier structure, String name) {
         this.structure = structure;
         this.name = name;
         setupEnergyStorage();
@@ -71,7 +83,7 @@ public class SolarControllerBE extends BlockEntity {
         if (energyHandler != null) {
             energyHandler.setLongCapacity(storage);
         } else {
-            energyHandler = new SolarEnergyStorage(storage, 0, Long.MAX_VALUE, currentEnergy);
+            energyHandler = createEnergyStorage(storage, 0, Long.MAX_VALUE, currentEnergy);
         }
     }
 
@@ -85,21 +97,21 @@ public class SolarControllerBE extends BlockEntity {
                 .append(Component.literal(name.replace("solar_", "").toUpperCase() + " SOLAR PANEL").withColor(Integer.parseInt(ModRarities.getColorForCrystal(name.replace("solar_", "")).getHexColor().substring(1), 16))
                         .append(Component.literal(" ═══").withStyle(ChatFormatting.GRAY))));
 
-        MutableComponent status = Component.translatable("tooltip.voidminers.controller.status.status").withStyle(ChatFormatting.GOLD);
+        MutableComponent status = Component.translatable("tooltip.voidminersremastered.controller.status.status").withStyle(ChatFormatting.GOLD);
 
         switch (haltReason) {
             case NONE:
-                status.append(Component.translatable("tooltip.voidminers.controller.status.working").withStyle(ChatFormatting.GREEN));
+                status.append(Component.translatable("tooltip.voidminersremastered.controller.status.working").withStyle(ChatFormatting.GREEN));
                 tooltip.add(status);
 
                 addSolarInfo(tooltip);
 
                 break;
             case STRUCTURE_NOT_FOUND: {
-                status.append(Component.translatable("tooltip.voidminers.controller.status.structure_incomplete").withStyle(ChatFormatting.RED));
+                status.append(Component.translatable("tooltip.voidminersremastered.controller.status.structure_incomplete").withStyle(ChatFormatting.RED));
                 tooltip.add(status);
 
-                tooltip.add(Component.translatable("tooltip.voidminers.controller.halt_reason.structure_not_found").withStyle(ChatFormatting.YELLOW));
+                tooltip.add(Component.translatable("tooltip.voidminersremastered.controller.halt_reason.structure_not_found").withStyle(ChatFormatting.YELLOW));
 
                 MiscUtil.getNeededBlocks(MiscUtil.structureMap.get(structure.toString())).forEach((string, integer) -> {
                     tooltip.add(Component.literal("• ").withStyle(ChatFormatting.GRAY)
@@ -110,14 +122,14 @@ public class SolarControllerBE extends BlockEntity {
                 break;
             }
             case NO_SKY_VIEW: {
-                status.append(Component.translatable("tooltip.voidminers.controller.status.no_sky_view").withStyle(ChatFormatting.RED));
+                status.append(Component.translatable("tooltip.voidminersremastered.controller.status.no_sky_view").withStyle(ChatFormatting.RED));
                 tooltip.add(status);
 
-                tooltip.add(Component.translatable("tooltip.voidminers.controller.halt_reason.no_sky_view").withStyle(ChatFormatting.YELLOW));
+                tooltip.add(Component.translatable("tooltip.voidminersremastered.controller.halt_reason.no_sky_view").withStyle(ChatFormatting.YELLOW));
                 break;
             }
             case POWER_FULL: {
-                status.append(Component.translatable("tooltip.voidminers.controller.status.power_full").withStyle(ChatFormatting.YELLOW));
+                status.append(Component.translatable("tooltip.voidminersremastered.controller.status.power_full").withStyle(ChatFormatting.YELLOW));
                 tooltip.add(status);
 
                 addSolarInfo(tooltip);
@@ -130,24 +142,24 @@ public class SolarControllerBE extends BlockEntity {
 
     private void addSolarInfo(List<Component> tooltip) {
         String energyBar = getEnergyBar(energyHandler.getLongEnergyStored(), energyHandler.getLongMaxEnergyStored());
-        tooltip.add(Component.translatable("tooltip.voidminers.controller.energy")
+        tooltip.add(Component.translatable("tooltip.voidminersremastered.controller.energy")
                 .append(Component.literal(String.format(
                         "%s §f%,d §7/ §f%,d RF", energyBar, energyHandler.getLongEnergyStored(), energyHandler.getLongMaxEnergyStored()))));
 
-        tooltip.add(Component.translatable("tooltip.voidminers.controller.generation").withStyle(net.minecraft.ChatFormatting.GREEN)
+        tooltip.add(Component.translatable("tooltip.voidminersremastered.controller.generation").withStyle(net.minecraft.ChatFormatting.GREEN)
                 .append(Component.literal(String.format("%,d RF/tick", getRFPerTick(getSolarEfficiency()))).withStyle(net.minecraft.ChatFormatting.WHITE)));
 
-        tooltip.add(Component.translatable("tooltip.voidminers.controller.efficiency").withStyle(net.minecraft.ChatFormatting.YELLOW)
+        tooltip.add(Component.translatable("tooltip.voidminersremastered.controller.efficiency").withStyle(net.minecraft.ChatFormatting.YELLOW)
                 .append(Component.literal(String.format("%.2f%%", getSolarEfficiency() * 100)).withStyle(net.minecraft.ChatFormatting.WHITE)));
 
         if(getSolarEfficiency() != 1.0f) {
             assert level != null;
             if(level.isRaining() && level.isThundering()) {
-                tooltip.add(Component.translatable("tooltip.voidminers.controller.efficiency_limited_by_thunder").withStyle(net.minecraft.ChatFormatting.YELLOW));
+                tooltip.add(Component.translatable("tooltip.voidminersremastered.controller.efficiency_limited_by_thunder").withStyle(net.minecraft.ChatFormatting.YELLOW));
             } else if (level.isRaining()) {
-                tooltip.add(Component.translatable("tooltip.voidminers.controller.efficiency_limited_by_rain").withStyle(net.minecraft.ChatFormatting.YELLOW));
+                tooltip.add(Component.translatable("tooltip.voidminersremastered.controller.efficiency_limited_by_rain").withStyle(net.minecraft.ChatFormatting.YELLOW));
             } else {
-                tooltip.add(Component.translatable("tooltip.voidminers.controller.efficiency_limited_by_time_of_day").withStyle(net.minecraft.ChatFormatting.YELLOW));
+                tooltip.add(Component.translatable("tooltip.voidminersremastered.controller.efficiency_limited_by_time_of_day").withStyle(net.minecraft.ChatFormatting.YELLOW));
             }
         }
     }
@@ -175,50 +187,38 @@ public class SolarControllerBE extends BlockEntity {
     }
 
     @Override
-    protected void saveAdditional(CompoundTag pTag, HolderLookup.Provider pRegistries) {
-        super.saveAdditional(pTag, pRegistries);
+    protected void saveAdditional(ValueOutput output) {
+        super.saveAdditional(output);
 
-        CompoundTag data = new CompoundTag();
-        if (energyHandler != null) data.put("energy", energyHandler.serializeNBT(pRegistries));
+        ValueOutput data = output.child(VoidMinersRemastered.MODID);
+        // Same NBT layout as 1.21.1: a child compound {energy: long, capacity: long} under "energy".
+        if (energyHandler != null) energyHandler.serialize(data.child("energy"));
         if (name != null) data.putString("name", this.name);
         if (structure != null) data.putString("structure", structure.toString());
         data.putBoolean("showStructure", showStructure);
         data.putBoolean("foundStructure", foundStructure);
         data.putBoolean("canSeeSky", canSeeSky);
-
-        pTag.put(VoidMinersRemastered.MODID, data);
     }
 
     @Override
-    protected void loadAdditional(CompoundTag pTag, HolderLookup.Provider pRegistries) {
-        super.loadAdditional(pTag, pRegistries);
-        CompoundTag data = pTag.getCompound(VoidMinersRemastered.MODID);
-        if (data.isEmpty())
+    protected void loadAdditional(ValueInput input) {
+        super.loadAdditional(input);
+
+        Optional<ValueInput> maybeData = input.child(VoidMinersRemastered.MODID);
+        if (maybeData.isEmpty())
             return;
 
-        if (data.contains("energy")) {
-            energyHandler.deserializeNBT(pRegistries, data.get("energy"));
-        }
+        ValueInput data = maybeData.get();
 
-        if (data.contains("name")) {
-            name = data.getString("name");
-        }
+        data.child("energy").ifPresent(energyHandler::deserialize);
 
-        if (data.contains("structure")) {
-            structure = ResourceLocation.parse(data.getString("structure"));
-        }
+        data.getString("name").ifPresent(loaded -> this.name = loaded);
 
-        if (data.contains("showStructure")) {
-            showStructure = data.getBoolean("showStructure");
-        }
+        data.getString("structure").ifPresent(loaded -> this.structure = Identifier.parse(loaded));
 
-        if (data.contains("foundStructure")) {
-            foundStructure = data.getBoolean("foundStructure");
-        }
-
-        if (data.contains("canSeeSky")) {
-            canSeeSky = data.getBoolean("canSeeSky");
-        }
+        this.showStructure = data.getBooleanOr("showStructure", this.showStructure);
+        this.foundStructure = data.getBooleanOr("foundStructure", this.foundStructure);
+        this.canSeeSky = data.getBooleanOr("canSeeSky", this.canSeeSky);
 
         sync();
     }
@@ -231,9 +231,9 @@ public class SolarControllerBE extends BlockEntity {
 
     @Override
     public CompoundTag getUpdateTag(HolderLookup.Provider pRegistries) {
-        CompoundTag tag = super.getUpdateTag(pRegistries);
-        saveAdditional(tag, pRegistries);
-        return tag;
+        // getUpdateTag still hands back a CompoundTag while saveAdditional now takes a ValueOutput.
+        // saveCustomOnly(Provider) is vanilla's bridge (BlockEntity.java:160-169).
+        return saveCustomOnly(pRegistries);
     }
 
     @Nullable
@@ -242,8 +242,8 @@ public class SolarControllerBE extends BlockEntity {
         return ClientboundBlockEntityDataPacket.create(this);
     }
 
-    public void tick(Level pLevel, BlockPos pPos, BlockState pState, ResourceLocation structure, String name) {
-        if (level == null || level.isClientSide) return;
+    public void tick(Level pLevel, BlockPos pPos, BlockState pState, Identifier structure, String name) {
+        if (level == null || level.isClientSide()) return;
 
         long gameTime = level.getGameTime();
 
@@ -298,7 +298,7 @@ public class SolarControllerBE extends BlockEntity {
     }
 
     private void pushEnergyToNeighbors() {
-        if (level == null || level.isClientSide) return;
+        if (level == null || level.isClientSide()) return;
         if (energyHandler == null) return;
 
         long available = energyHandler.getLongEnergyStored();
@@ -309,30 +309,27 @@ public class SolarControllerBE extends BlockEntity {
             BlockEntity neighbor = level.getBlockEntity(neighborPos);
             if (neighbor == null) continue;
 
-            IEnergyStorage receiver = level.getCapability(Capabilities.EnergyStorage.BLOCK, neighborPos, dir.getOpposite());
+            // Capabilities.EnergyStorage/IEnergyStorage are gone: the block capability now resolves to
+            // net.neoforged.neoforge.transfer.energy.EnergyHandler (Capabilities.java:22).
+            EnergyHandler receiver = level.getCapability(Capabilities.Energy.BLOCK, neighborPos, dir.getOpposite());
 
             if (receiver == null) continue;
-
-            long availableNow = energyHandler.getLongEnergyStored();
-            if (availableNow <= 0) break;
 
             long remaining = energyHandler.getLongEnergyStored();
             while (remaining > 0) {
                 int toSend = (int) Math.min(remaining, Integer.MAX_VALUE);
-                int accepted = receiver.receiveEnergy(toSend, false);
+                // move() extracts from us and inserts into the receiver inside a single transaction
+                // that it commits itself (EnergyHandlerUtil.java:69).
+                int accepted = EnergyHandlerUtil.move(energyHandler, receiver, toSend, null);
                 if (accepted <= 0) break;
-                energyHandler.removeLongEnergy(accepted);
                 remaining -= accepted;
                 if (accepted < toSend) break;
             }
         }
     }
 
-    @Override
-    public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider pRegistries) {
-        super.handleUpdateTag(tag, pRegistries);
-        this.loadAdditional(tag, pRegistries);
-    }
+    // handleUpdateTag(ValueInput) is no longer overridden: the NeoForge default
+    // (IBlockEntityExtension.java:47) already routes to loadWithComponents -> loadAdditional.
 
     public SolarEnergyStorage getEnergyStorage() {
         return energyHandler;
@@ -366,11 +363,11 @@ public class SolarControllerBE extends BlockEntity {
     public float getSolarEfficiency() {
         assert level != null;
 
-        if (SolarConfigLoader.getInstance().isAlwaysDayDimension(level.dimension().location().toString())) {
+        if (SolarConfigLoader.getInstance().isAlwaysDayDimension(level.dimension().identifier().toString())) {
             return 1.0f;
         }
 
-        long timeOfDay = level.getDayTime() % 24000L;
+        long timeOfDay = level.getDefaultClockTime() % 24000L;
         float efficiency;
 
         if (timeOfDay < 5000) {
@@ -445,7 +442,7 @@ public class SolarControllerBE extends BlockEntity {
                 });
     }
 
-    public ResourceLocation getStructure() {
+    public Identifier getStructure() {
         return structure;
     }
 

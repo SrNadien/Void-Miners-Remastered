@@ -2,15 +2,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "C": {
-      "item": "voidminersremastered:amethystine"
-    },
-    "M": {
-      "item": "voidminersremastered:caerium_speed_modifier"
-    },
-    "c": {
-      "item": "minecraft:sugar"
-    }
+    "C": "voidminersremastered:amethystine",
+    "M": "voidminersremastered:caerium_speed_modifier",
+    "c": "minecraft:sugar"
   },
   "pattern": [
     "CcC",
@@ -18,7 +12,6 @@
     "CcC"
   ],
   "result": {
-    "count": 1,
     "id": "voidminersremastered:amethystine_speed_modifier"
   }
 }

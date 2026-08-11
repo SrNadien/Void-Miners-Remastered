@@ -2,9 +2,7 @@
   "type": "minecraft:crafting_shapeless",
   "category": "misc",
   "ingredients": [
-    {
-      "item": "voidminersremastered:amethystine_block"
-    }
+    "voidminersremastered:amethystine_block"
   ],
   "result": {
     "count": 9,

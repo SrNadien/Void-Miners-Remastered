@@ -30,3 +30,6 @@ run-data/
 src/generated/resources/.cache/
 gradlew
 /bin
+
+# Claude Code local settings
+.claude/settings.local.json

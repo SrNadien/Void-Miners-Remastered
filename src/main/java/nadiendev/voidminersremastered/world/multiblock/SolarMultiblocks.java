@@ -8,8 +8,8 @@ import nadiendev.voidminersremastered.util.MiscUtil;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.pattern.BlockInWorld;
-import org.mangorage.mangomultiblock.core.SimpleMultiBlockAislePatternBuilder;
-import org.mangorage.mangomultiblock.core.manager.MultiBlockManager;
+import nadiendev.mangomultiblock.core.SimpleMultiBlockAislePatternBuilder;
+import nadiendev.mangomultiblock.core.manager.MultiBlockManager;
 
 import java.util.ArrayList;
 import java.util.List;

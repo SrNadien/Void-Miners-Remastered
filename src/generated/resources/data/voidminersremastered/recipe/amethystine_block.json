@@ -2,36 +2,17 @@
   "type": "minecraft:crafting_shapeless",
   "category": "misc",
   "ingredients": [
-    {
-      "item": "voidminersremastered:amethystine"
-    },
-    {
-      "item": "voidminersremastered:amethystine"
-    },
-    {
-      "item": "voidminersremastered:amethystine"
-    },
-    {
-      "item": "voidminersremastered:amethystine"
-    },
-    {
-      "item": "voidminersremastered:amethystine"
-    },
-    {
-      "item": "voidminersremastered:amethystine"
-    },
-    {
-      "item": "voidminersremastered:amethystine"
-    },
-    {
-      "item": "voidminersremastered:amethystine"
-    },
-    {
-      "item": "voidminersremastered:amethystine"
-    }
+    "voidminersremastered:amethystine",
+    "voidminersremastered:amethystine",
+    "voidminersremastered:amethystine",
+    "voidminersremastered:amethystine",
+    "voidminersremastered:amethystine",
+    "voidminersremastered:amethystine",
+    "voidminersremastered:amethystine",
+    "voidminersremastered:amethystine",
+    "voidminersremastered:amethystine"
   ],
   "result": {
-    "count": 1,
     "id": "voidminersremastered:amethystine_block"
   }
 }

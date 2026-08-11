@@ -6,7 +6,7 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 import java.util.HashMap;
@@ -16,7 +16,7 @@ import java.util.Map;
 public record SyncConfigS2CPacket(Map<String, MinerConfigLoader.Config> minerConfigs) implements CustomPacketPayload {
 
     public static final CustomPacketPayload.Type<SyncConfigS2CPacket> TYPE = 
-        new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(VoidMinersRemastered.MODID, "sync_config"));
+        new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath(VoidMinersRemastered.MODID, "sync_config"));
 
     public static final StreamCodec<ByteBuf, SyncConfigS2CPacket> STREAM_CODEC = StreamCodec.composite(
         ByteBufCodecs.map(

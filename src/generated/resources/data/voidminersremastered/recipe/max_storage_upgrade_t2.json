@@ -2,15 +2,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "C": {
-      "item": "voidminersremastered:caerium"
-    },
-    "S": {
-      "item": "minecraft:netherite_block"
-    },
-    "T": {
-      "item": "voidminersremastered:max_storage_upgrade_t2"
-    }
+    "C": "voidminersremastered:caerium",
+    "S": "minecraft:netherite_block",
+    "T": "voidminersremastered:max_storage_upgrade_t2"
   },
   "pattern": [
     "CTC",
@@ -18,7 +12,6 @@
     "CCC"
   ],
   "result": {
-    "count": 1,
     "id": "voidminersremastered:max_storage_upgrade_t2"
   }
 }

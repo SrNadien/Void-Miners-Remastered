@@ -8,9 +8,7 @@ import mezz.jei.api.registration.IGuiHandlerRegistration;
 import mezz.jei.api.registration.IRecipeCatalystRegistration;
 import mezz.jei.api.registration.IRecipeCategoryRegistration;
 import mezz.jei.api.registration.IRecipeRegistration;
-import net.minecraft.client.Minecraft;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.crafting.RecipeManager;
+import net.minecraft.resources.Identifier;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -21,8 +19,8 @@ public class JeiPlugin implements IModPlugin {
     List<MinerCategory> tiers = new ArrayList<>();
 
     @Override
-    public ResourceLocation getPluginUid() {
-        return ResourceLocation.fromNamespaceAndPath(VoidMinersRemastered.MODID, "jei_plugin");
+    public Identifier getPluginUid() {
+        return Identifier.fromNamespaceAndPath(VoidMinersRemastered.MODID, "jei_plugin");
     }
 
     @Override
@@ -47,16 +45,15 @@ public class JeiPlugin implements IModPlugin {
 
     @Override
     public void registerRecipes(IRecipeRegistration registration) {
-        RecipeManager manager = Minecraft.getInstance().level.getRecipeManager();
+        // 26.1.2: there is no client-side recipe manager any more (Level#getRecipeManager and
+        // RecipeManager#getAllRecipesFor were both removed). The miner recipes reach the client through
+        // NeoForge's opt-in recipe sync; see MinerRecipeSync / MinerRecipeSyncClient.
+        List<MinerRecipe> minerRecipes = MinerRecipeSync.clientRecipes();
 
-
-        List<MinerRecipe> minerRecipes = manager.getAllRecipesFor(MinerRecipe.Type.INSTANCE)
-                .stream()
-                .map(holder -> {
-                    holder.value().setId(holder.id());
-                    return holder.value();
-                })
-                .toList();
+        if (minerRecipes.isEmpty()) {
+            VoidMinersRemastered.LOGGER.warn(
+                    "No miner recipes were mirrored to the client, JEI miner categories will be empty.");
+        }
 
         for (int i = 0; i < tiers.size(); i++) {
             addRecipeToTier(i, minerRecipes, registration);

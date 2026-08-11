@@ -2,9 +2,7 @@
   "type": "minecraft:crafting_shapeless",
   "category": "misc",
   "ingredients": [
-    {
-      "item": "voidminersremastered:solar_rosarium_block"
-    }
+    "voidminersremastered:solar_rosarium_block"
   ],
   "result": {
     "count": 9,

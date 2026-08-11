@@ -2,9 +2,7 @@
   "type": "minecraft:crafting_shapeless",
   "category": "misc",
   "ingredients": [
-    {
-      "item": "voidminersremastered:citrinetine_block"
-    }
+    "voidminersremastered:citrinetine_block"
   ],
   "result": {
     "count": 9,

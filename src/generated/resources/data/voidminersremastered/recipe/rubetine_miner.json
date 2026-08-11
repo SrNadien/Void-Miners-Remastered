@@ -2,18 +2,10 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "B": {
-      "item": "voidminersremastered:rubetine_block"
-    },
-    "C": {
-      "item": "minecraft:diamond"
-    },
-    "G": {
-      "item": "minecraft:glass"
-    },
-    "O": {
-      "item": "minecraft:obsidian"
-    }
+    "B": "voidminersremastered:rubetine_block",
+    "C": "minecraft:diamond",
+    "G": "minecraft:glass",
+    "O": "minecraft:obsidian"
   },
   "pattern": [
     "GGG",
@@ -21,7 +13,6 @@
     "BOB"
   ],
   "result": {
-    "count": 1,
     "id": "voidminersremastered:rubetine_miner"
   }
 }

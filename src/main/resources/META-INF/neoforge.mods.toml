@@ -29,16 +29,19 @@ description='''${mod_description}'''
     ordering="NONE"
     side="BOTH"
 
+# KubeJS ships as <mcversion>-<modversion> on maven but reports only the mod version to the
+# loader, so this stays unbounded rather than pinned to ${kubejs_version}.
 [[dependencies.${mod_id}]]
     modId="kubejs"
     type="optional"
-   versionRange="[${kubejs_version},)"
+    versionRange="${kubejs_version}"
     ordering="AFTER"
     side="BOTH"
 
+# Built from github.com/SrNadien/Mango-Multiblock-Revived branch Neo/26.1.2 (reports version 4.0.0).
 [[dependencies.${mod_id}]]
     modId="mangomultiblock"
     type="required"
-   versionRange="${mangomultiblock_version_id}"
+    versionRange="${mangomultiblock_version_id}"
     ordering="AFTER"
     side="BOTH"

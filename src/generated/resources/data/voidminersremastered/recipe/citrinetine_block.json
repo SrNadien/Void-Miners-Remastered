@@ -2,36 +2,17 @@
   "type": "minecraft:crafting_shapeless",
   "category": "misc",
   "ingredients": [
-    {
-      "item": "voidminersremastered:citrinetine"
-    },
-    {
-      "item": "voidminersremastered:citrinetine"
-    },
-    {
-      "item": "voidminersremastered:citrinetine"
-    },
-    {
-      "item": "voidminersremastered:citrinetine"
-    },
-    {
-      "item": "voidminersremastered:citrinetine"
-    },
-    {
-      "item": "voidminersremastered:citrinetine"
-    },
-    {
-      "item": "voidminersremastered:citrinetine"
-    },
-    {
-      "item": "voidminersremastered:citrinetine"
-    },
-    {
-      "item": "voidminersremastered:citrinetine"
-    }
+    "voidminersremastered:citrinetine",
+    "voidminersremastered:citrinetine",
+    "voidminersremastered:citrinetine",
+    "voidminersremastered:citrinetine",
+    "voidminersremastered:citrinetine",
+    "voidminersremastered:citrinetine",
+    "voidminersremastered:citrinetine",
+    "voidminersremastered:citrinetine",
+    "voidminersremastered:citrinetine"
   ],
   "result": {
-    "count": 1,
     "id": "voidminersremastered:citrinetine_block"
   }
 }

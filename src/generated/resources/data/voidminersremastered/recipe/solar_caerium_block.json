@@ -2,36 +2,17 @@
   "type": "minecraft:crafting_shapeless",
   "category": "misc",
   "ingredients": [
-    {
-      "item": "voidminersremastered:solar_caerium"
-    },
-    {
-      "item": "voidminersremastered:solar_caerium"
-    },
-    {
-      "item": "voidminersremastered:solar_caerium"
-    },
-    {
-      "item": "voidminersremastered:solar_caerium"
-    },
-    {
-      "item": "voidminersremastered:solar_caerium"
-    },
-    {
-      "item": "voidminersremastered:solar_caerium"
-    },
-    {
-      "item": "voidminersremastered:solar_caerium"
-    },
-    {
-      "item": "voidminersremastered:solar_caerium"
-    },
-    {
-      "item": "voidminersremastered:solar_caerium"
-    }
+    "voidminersremastered:solar_caerium",
+    "voidminersremastered:solar_caerium",
+    "voidminersremastered:solar_caerium",
+    "voidminersremastered:solar_caerium",
+    "voidminersremastered:solar_caerium",
+    "voidminersremastered:solar_caerium",
+    "voidminersremastered:solar_caerium",
+    "voidminersremastered:solar_caerium",
+    "voidminersremastered:solar_caerium"
   ],
   "result": {
-    "count": 1,
     "id": "voidminersremastered:solar_caerium_block"
   }
 }

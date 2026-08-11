@@ -1,40 +1,39 @@
 package nadiendev.voidminersremastered.datagen;
 
 import nadiendev.voidminersremastered.VoidMinersRemastered;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.data.DataGenerator;
-import net.minecraft.data.PackOutput;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
 
-import java.util.concurrent.CompletableFuture;
-
+/**
+ * 26.1.2: {@code GatherDataEvent} is abstract and split into {@code .Client} / {@code .Server}.
+ * NeoForge itself registers everything (client <em>and</em> server data) from the {@code .Client}
+ * event during a single {@code clientData} run -- see {@code ClientNeoForgeMod#onGatherData}.
+ * <p>
+ * {@code includeClient()}, {@code includeServer()}, {@code getPackOutput()} and
+ * {@code getExistingFileHelper()} were all removed; providers are now built via
+ * {@code event.createProvider(...)}.
+ */
 @EventBusSubscriber(modid = VoidMinersRemastered.MODID)
 public class DataGenerators {
     @SubscribeEvent
-    public static void gatherData(GatherDataEvent event) {
-        DataGenerator generator = event.getGenerator();
-        PackOutput packOutput = generator.getPackOutput();
-        ExistingFileHelper existingFileHelper = event.getExistingFileHelper();
-        CompletableFuture<HolderLookup.Provider> provider = event.getLookupProvider();
+    public static void gatherData(GatherDataEvent.Client event) {
+        event.createProvider(ModBlockStateProvider::new);
+        event.createProvider(ModItemModelProvider::new);
 
-        generator.addProvider(event.includeClient(), new ModBlockStateProvider(packOutput, existingFileHelper));
-        generator.addProvider(event.includeClient(), new ModItemModelProvider(packOutput, existingFileHelper));
-        generator.addProvider(event.includeServer(), new ModRecipeProvider(packOutput, provider));
+        event.createProvider(ModRecipeProvider.Runner::new);
 
-        generator.addProvider(event.includeServer(), ModLootTableProvider.create(packOutput, provider));
+        event.createProvider(ModLootTableProvider::create);
 
-        generator.addProvider(event.includeServer(), new ModBlockTagGenerator(packOutput, provider, existingFileHelper));
+        event.createProvider(ModBlockTagGenerator::new);
 
-        generator.addProvider(event.includeClient(), new ModLanguageProvider(packOutput, "en_us"));
-        generator.addProvider(event.includeClient(), new ModLanguageProvider.EsEs(packOutput, "es_es"));
-        generator.addProvider(event.includeClient(), new ModLanguageProvider.EsEs(packOutput, "es_ar"));
-        generator.addProvider(event.includeClient(), new ModLanguageProvider.EsEs(packOutput, "es_cl"));
-        generator.addProvider(event.includeClient(), new ModLanguageProvider.EsEs(packOutput, "es_mx"));
-        generator.addProvider(event.includeClient(), new ModLanguageProvider.JaJp(packOutput));
-        generator.addProvider(event.includeClient(), new ModLanguageProvider.ZhCn(packOutput));
-        generator.addProvider(event.includeClient(), new ModLanguageProvider.RuRu(packOutput));
+        event.createProvider(output -> new ModLanguageProvider(output, "en_us"));
+        event.createProvider(output -> new ModLanguageProvider.EsEs(output, "es_es"));
+        event.createProvider(output -> new ModLanguageProvider.EsEs(output, "es_ar"));
+        event.createProvider(output -> new ModLanguageProvider.EsEs(output, "es_cl"));
+        event.createProvider(output -> new ModLanguageProvider.EsEs(output, "es_mx"));
+        event.createProvider(ModLanguageProvider.JaJp::new);
+        event.createProvider(ModLanguageProvider.ZhCn::new);
+        event.createProvider(ModLanguageProvider.RuRu::new);
     }
 }

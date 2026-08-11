@@ -2,15 +2,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "G": {
-      "item": "voidminersremastered:structure_panel"
-    },
-    "I": {
-      "item": "minecraft:iron_ingot"
-    },
-    "O": {
-      "item": "minecraft:obsidian"
-    }
+    "G": "voidminersremastered:structure_panel",
+    "I": "minecraft:iron_ingot",
+    "O": "minecraft:obsidian"
   },
   "pattern": [
     "OIO",
@@ -18,7 +12,6 @@
     "OIO"
   ],
   "result": {
-    "count": 1,
     "id": "voidminersremastered:null_modifier"
   }
 }

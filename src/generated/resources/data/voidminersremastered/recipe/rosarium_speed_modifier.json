@@ -2,15 +2,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "C": {
-      "item": "voidminersremastered:rosarium"
-    },
-    "M": {
-      "item": "voidminersremastered:amethystine_speed_modifier"
-    },
-    "c": {
-      "item": "minecraft:sugar"
-    }
+    "C": "voidminersremastered:rosarium",
+    "M": "voidminersremastered:amethystine_speed_modifier",
+    "c": "minecraft:sugar"
   },
   "pattern": [
     "CcC",
@@ -18,7 +12,6 @@
     "CcC"
   ],
   "result": {
-    "count": 1,
     "id": "voidminersremastered:rosarium_speed_modifier"
   }
 }

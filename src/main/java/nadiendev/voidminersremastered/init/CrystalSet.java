@@ -5,7 +5,7 @@ import nadiendev.voidminersremastered.world.block.*;
 import nadiendev.voidminersremastered.world.block.MinerControllerBlock;
 import nadiendev.voidminersremastered.util.CustomColorUtil;
 import nadiendev.voidminersremastered.world.item.ColoredItem;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.level.block.Block;
@@ -52,19 +52,17 @@ public class CrystalSet {
     }
 
     public static DeferredHolder<Item, Item> fastCreateItem(String name, Rarity rarity, CustomColorUtil color) {
-        return ModItems.ITEMS.register(name, () -> new ColoredItem(
-                new Item.Properties().rarity(rarity), color
-        ));
+        return ModItems.ITEMS.<Item>registerItem(name,
+                p -> new ColoredItem(p, color),
+                () -> new Item.Properties().rarity(rarity));
     }
 
     public static DeferredHolder<Block, Block> fastCreateBlock(String name, float hardness, float resistance, Rarity rarity, CustomColorUtil color) {
-        return ModBlocks.registerColoredBlock(name,
-                () -> new ColoredBlock(
-                        BlockBehaviour.Properties.of()
-                                .strength(hardness, resistance)
-                                .requiresCorrectToolForDrops(),
-                        color
-                ),
+        return ModBlocks.<Block>registerColoredBlock(name,
+                p -> new ColoredBlock(p, color),
+                () -> BlockBehaviour.Properties.of()
+                        .strength(hardness, resistance)
+                        .requiresCorrectToolForDrops(),
                 rarity,
                 color
         );
@@ -72,30 +70,22 @@ public class CrystalSet {
 
     public static DeferredHolder<Block, ModifierBlock> fastCreateModifier(String name, float hardness, float resistance, Rarity rarity, ModifierType type, CustomColorUtil color) {
         return ModBlocks.registerColoredBlock(name + "_" + type.type + "_modifier",
-                () -> new ModifierBlock(
-                        BlockBehaviour.Properties.of()
-                                .strength(hardness, resistance)
-                                .requiresCorrectToolForDrops(),
-                        name,
-                        color,
-                        type
-                ),
+                p -> new ModifierBlock(p, name, color, type),
+                () -> BlockBehaviour.Properties.of()
+                        .strength(hardness, resistance)
+                        .requiresCorrectToolForDrops(),
                 rarity,
                 color
         );
     }
 
-    public static DeferredHolder<Block, MinerControllerBlock> fastCreateController(String name, float hardness, float resistance, Rarity rarity, ResourceLocation structure, CustomColorUtil color) {
+    public static DeferredHolder<Block, MinerControllerBlock> fastCreateController(String name, float hardness, float resistance, Rarity rarity, Identifier structure, CustomColorUtil color) {
         return ModBlocks.registerColoredBlock(name + "_miner",
-                () -> new MinerControllerBlock(
-                        BlockBehaviour.Properties.of()
-                                .strength(hardness, resistance)
-                                .requiresCorrectToolForDrops()
-                                .noOcclusion(),
-                        structure,
-                        name,
-                        color
-                ),
+                p -> new MinerControllerBlock(p, structure, name, color),
+                () -> BlockBehaviour.Properties.of()
+                        .strength(hardness, resistance)
+                        .requiresCorrectToolForDrops()
+                        .noOcclusion(),
                 rarity,
                 color
         );
@@ -118,7 +108,7 @@ public class CrystalSet {
                 name,
                 name.equals("ultimate") ? null : fastCreateItem(name, rarity, color),
                 fastCreateBlock(name + "_block", 5, 6, rarity, color),
-                fastCreateController(name, 5, 6, rarity, ResourceLocation.fromNamespaceAndPath(VoidMinersRemastered.MODID, "miner_" + name), color),
+                fastCreateController(name, 5, 6, rarity, Identifier.fromNamespaceAndPath(VoidMinersRemastered.MODID, "miner_" + name), color),
                 fastCreateBlock(name + "_frame", 5, 6, rarity, color),
                 fastCreateModifier(name, 5, 6, rarity, ModifierType.ENERGY, color),
                 fastCreateModifier(name, 5, 6, rarity, ModifierType.SPEED, color),

@@ -2,9 +2,7 @@
   "type": "minecraft:crafting_shapeless",
   "category": "misc",
   "ingredients": [
-    {
-      "item": "voidminersremastered:verdium_block"
-    }
+    "voidminersremastered:verdium_block"
   ],
   "result": {
     "count": 9,

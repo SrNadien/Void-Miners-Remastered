@@ -2,12 +2,8 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "D": {
-      "item": "minecraft:diamond_block"
-    },
-    "G": {
-      "item": "voidminersremastered:citrinetine"
-    }
+    "D": "minecraft:diamond_block",
+    "G": "voidminersremastered:citrinetine"
   },
   "pattern": [
     "GGG",
@@ -15,7 +11,6 @@
     "GGG"
   ],
   "result": {
-    "count": 1,
     "id": "voidminersremastered:max_storage_upgrade_t1"
   }
 }

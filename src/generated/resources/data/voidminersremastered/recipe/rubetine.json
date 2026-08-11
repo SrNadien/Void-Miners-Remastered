@@ -2,15 +2,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "B": {
-      "item": "minecraft:blaze_powder"
-    },
-    "D": {
-      "item": "minecraft:diamond"
-    },
-    "R": {
-      "item": "minecraft:redstone"
-    }
+    "B": "minecraft:blaze_powder",
+    "D": "minecraft:diamond",
+    "R": "minecraft:redstone"
   },
   "pattern": [
     "RBR",

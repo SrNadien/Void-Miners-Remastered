@@ -4,7 +4,8 @@ import nadiendev.voidminersremastered.util.CustomColorUtil;
 import nadiendev.voidminersremastered.world.block.entity.SolarControllerBE;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -20,10 +21,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class SolarControllerBlock extends ColoredBlock implements EntityBlock {
-    final ResourceLocation structure;
+    final Identifier structure;
     final String name;
 
-    public SolarControllerBlock(Properties pProperties, ResourceLocation structure, String name, CustomColorUtil color) {
+    public SolarControllerBlock(Properties pProperties, Identifier structure, String name, CustomColorUtil color) {
         super(pProperties, color);
         this.structure = structure;
         this.name = name;
@@ -39,7 +40,7 @@ public class SolarControllerBlock extends ColoredBlock implements EntityBlock {
     protected InteractionResult useWithoutItem(BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, BlockHitResult pHit) {
         SolarControllerBE blockEntity = (SolarControllerBE) pLevel.getBlockEntity(pPos);
 
-        if (pLevel.isClientSide) {
+        if (pLevel.isClientSide()) {
             return InteractionResult.SUCCESS;
         }
 
@@ -52,7 +53,10 @@ public class SolarControllerBlock extends ColoredBlock implements EntityBlock {
 
         if (blockEntity != null) {
             for (Component component : blockEntity.getInteractionTooltip()) {
-                pPlayer.displayClientMessage(component, false);
+                // Player#displayClientMessage is gone in 26.1.2; this path is always server-side.
+                if (pPlayer instanceof ServerPlayer serverPlayer) {
+                    serverPlayer.sendSystemMessage(component, false);
+                }
             }
         }
 

@@ -6,11 +6,7 @@ import nadiendev.voidminersremastered.init.ModifierType;
 import nadiendev.voidminersremastered.util.CustomColorUtil;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
-
-import java.util.List;
+import java.util.function.Consumer;
 
 public class ModifierBlock extends ColoredBlock {
     public String name;
@@ -28,8 +24,11 @@ public class ModifierBlock extends ColoredBlock {
         this.type = type;
     }
 
-    @Override
-    public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+    /**
+     * Block#appendHoverText was removed in 26.1.2, so the modifier tooltip is emitted from
+     * {@link nadiendev.voidminersremastered.world.item.ColoredBlockItem} instead, which calls this.
+     */
+    public void appendModifierTooltip(Consumer<Component> tooltipAdder) {
         switch (type) {
             case ENERGY, SPEED, ITEM:
                 MinerConfigLoader.ModifierConfig minerConfig = MinerConfigLoader.getInstance().getModifierConfig(this);
@@ -39,15 +38,15 @@ public class ModifierBlock extends ColoredBlock {
                 final String item = String.format(minerConfig.item() >= 1 ? "+%.0f" : "%.0f",  -(1 - minerConfig.item()) * 100);
 
                 if(minerConfig.speed() != 1f) {
-                    tooltipComponents.add(Component.translatable("tooltip.voidminers.speed",
+                    tooltipAdder.accept(Component.translatable("tooltip.voidminersremastered.speed",
                             speed).withStyle(ChatFormatting.GREEN));
                 }
                 if(minerConfig.item() != 1f) {
-                    tooltipComponents.add(Component.translatable("tooltip.voidminers.item",
+                    tooltipAdder.accept(Component.translatable("tooltip.voidminersremastered.item",
                             item).withStyle(ChatFormatting.AQUA));
                 }
                 if(minerConfig.energy() != 1f) {
-                    tooltipComponents.add(Component.translatable("tooltip.voidminers.energy",
+                    tooltipAdder.accept(Component.translatable("tooltip.voidminersremastered.energy",
                             energy).withStyle(ChatFormatting.GOLD));
                 }
                 break;
@@ -57,16 +56,12 @@ public class ModifierBlock extends ColoredBlock {
                 final String weatherResistance = String.format(solarConfig.weatherResistance() >= 1 ? "+%.0f" : "%.0f", -(1 - solarConfig.weatherResistance()) * 100);
 
                 if(solarConfig.efficiency() != 1f) {
-                    tooltipComponents.add(Component.translatable("tooltip.voidminers.efficiency",
+                    tooltipAdder.accept(Component.translatable("tooltip.voidminersremastered.efficiency",
                             efficiency).withStyle(ChatFormatting.GREEN));
                 }
                 if(solarConfig.weatherResistance() != 1f) {
-                    tooltipComponents.add(Component.translatable("tooltip.voidminers.weatherResistance",
+                    tooltipAdder.accept(Component.translatable("tooltip.voidminersremastered.weatherResistance",
                             weatherResistance).withStyle(ChatFormatting.AQUA));
                 }
-        }
-
-
-        super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
-    }
+        }    }
 }

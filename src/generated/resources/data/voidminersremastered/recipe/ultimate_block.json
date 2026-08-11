@@ -2,12 +2,8 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "N": {
-      "item": "minecraft:nether_star"
-    },
-    "R": {
-      "item": "voidminersremastered:rosarium_block"
-    }
+    "N": "minecraft:nether_star",
+    "R": "voidminersremastered:rosarium_block"
   },
   "pattern": [
     "RRR",
@@ -15,7 +11,6 @@
     "RRR"
   ],
   "result": {
-    "count": 1,
     "id": "voidminersremastered:ultimate_block"
   }
 }

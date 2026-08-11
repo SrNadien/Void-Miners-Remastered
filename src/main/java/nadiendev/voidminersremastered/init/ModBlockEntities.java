@@ -15,7 +15,7 @@ public class ModBlockEntities {
 
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<MinerControllerBE>> MINER_CONTROLLER_BASE_BE =
             BLOCK_ENTITIES.register("controller_base",
-                    () -> BlockEntityType.Builder.of(
+                    () -> new BlockEntityType<>(
                             MinerControllerBE::new,
                             CrystalSet.RUBETINE.CONTROLLER.get(),
                             CrystalSet.AURANTIUM.CONTROLLER.get(),
@@ -26,12 +26,12 @@ public class ModBlockEntities {
                             CrystalSet.AMETHYSTINE.CONTROLLER.get(),
                             CrystalSet.ROSARIUM.CONTROLLER.get(),
                             CrystalSet.ULTIMATE.CONTROLLER.get()
-                    ).build(null)
+                    )
             );
 
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<SolarControllerBE>> SOLAR_BASE_BE =
             BLOCK_ENTITIES.register("solar_base",
-                    () -> BlockEntityType.Builder.of(
+                    () -> new BlockEntityType<>(
                             SolarControllerBE::new,
                             SolarSet.RUBETINE.CONTROLLER.get(),
                             SolarSet.AURANTIUM.CONTROLLER.get(),
@@ -42,6 +42,6 @@ public class ModBlockEntities {
                             SolarSet.AMETHYSTINE.CONTROLLER.get(),
                             SolarSet.ROSARIUM.CONTROLLER.get(),
                             SolarSet.ULTIMATE.CONTROLLER.get()
-                    ).build(null)
+                    )
             );
 }

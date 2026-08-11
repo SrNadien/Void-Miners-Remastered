@@ -2,15 +2,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "G": {
-      "item": "minecraft:gold_nugget"
-    },
-    "I": {
-      "item": "minecraft:iron_ingot"
-    },
-    "S": {
-      "item": "voidminersremastered:structure_panel"
-    }
+    "G": "minecraft:gold_nugget",
+    "I": "minecraft:iron_ingot",
+    "S": "voidminersremastered:structure_panel"
   },
   "pattern": [
     "GIG",
@@ -18,7 +12,6 @@
     "GIG"
   ],
   "result": {
-    "count": 1,
     "id": "voidminersremastered:frame_base"
   }
 }

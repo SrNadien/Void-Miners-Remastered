@@ -15,7 +15,7 @@ public class ModCreativeTabs {
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> VOIDMINERS =
         CREATIVE_MODE_TABS.register("voidminers", () ->
             CreativeModeTab.builder()
-                .title(Component.translatable("creativetab.voidminers.title"))
+                .title(Component.translatable("creativetab.voidminersremastered.title"))
                 .icon(() -> new ItemStack(ModBlocks.FRAME_BASE.get()))
                 .displayItems((parameters, output) -> {
          

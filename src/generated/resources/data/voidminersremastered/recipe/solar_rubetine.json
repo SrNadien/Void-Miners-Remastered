@@ -2,15 +2,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "C": {
-      "item": "voidminersremastered:rubetine"
-    },
-    "P": {
-      "item": "minecraft:redstone"
-    },
-    "c": {
-      "item": "minecraft:glowstone_dust"
-    }
+    "C": "voidminersremastered:rubetine",
+    "P": "minecraft:redstone",
+    "c": "minecraft:glowstone_dust"
   },
   "pattern": [
     "CcC",

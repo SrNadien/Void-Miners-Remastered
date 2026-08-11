@@ -4,7 +4,7 @@ import nadiendev.voidminersremastered.VoidMinersRemastered;
 import dev.latvian.mods.kubejs.plugin.ClassFilter;
 import dev.latvian.mods.kubejs.plugin.KubeJSPlugin;
 import dev.latvian.mods.kubejs.recipe.schema.RecipeSchemaRegistry;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public class VoidMinersKubeJSPlugin implements KubeJSPlugin {
     
@@ -15,6 +15,6 @@ public class VoidMinersKubeJSPlugin implements KubeJSPlugin {
     
     @Override
     public void registerRecipeSchemas(RecipeSchemaRegistry event) {
-        event.register(ResourceLocation.fromNamespaceAndPath(VoidMinersRemastered.MODID, "miner"), VoidMinerRecipeSchema.SCHEMA);
+        event.register(Identifier.fromNamespaceAndPath(VoidMinersRemastered.MODID, "miner"), VoidMinerRecipeSchema.SCHEMA);
     }
 }

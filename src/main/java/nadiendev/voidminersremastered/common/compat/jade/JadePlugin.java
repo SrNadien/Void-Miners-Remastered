@@ -17,9 +17,11 @@ public class JadePlugin implements IWailaPlugin {
         registration.registerBlockDataProvider(SolarProvider.INSTANCE, SolarControllerBE.class);
     }
     
+    // Since Minecraft 1.21.6 Jade rejects a data provider that also implements IComponentProvider,
+    // so the client tooltips come from separate *ClientProvider classes.
     @Override
     public void registerClient(IWailaClientRegistration registration) {
-        registration.registerBlockComponent(MinerProvider.INSTANCE, Block.class);
-        registration.registerBlockComponent(SolarProvider.INSTANCE, Block.class);
+        registration.registerBlockComponent(MinerClientProvider.INSTANCE, Block.class);
+        registration.registerBlockComponent(SolarClientProvider.INSTANCE, Block.class);
     }
 }

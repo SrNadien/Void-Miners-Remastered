@@ -7,21 +7,20 @@ import nadiendev.voidminersremastered.init.SolarSet;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.PackOutput;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.block.Block;
 import net.neoforged.neoforge.common.data.BlockTagsProvider;
-import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public class ModBlockTagGenerator extends BlockTagsProvider {
-    public ModBlockTagGenerator(PackOutput output, CompletableFuture<HolderLookup.Provider> lookupProvider, @Nullable ExistingFileHelper existingFileHelper) {
-        super(output, lookupProvider, VoidMinersRemastered.MODID, existingFileHelper);
+    // 26.1.2: ExistingFileHelper is gone; BlockTagsProvider takes (output, lookupProvider, modId).
+    public ModBlockTagGenerator(PackOutput output, CompletableFuture<HolderLookup.Provider> lookupProvider) {
+        super(output, lookupProvider, VoidMinersRemastered.MODID);
     }
 
     @Override
@@ -108,6 +107,6 @@ public class ModBlockTagGenerator extends BlockTagsProvider {
     public static final TagKey<Block> SOLAR_MODIFIERS = create("solar_modifiers");
 
     private static TagKey<Block> create(String pName) {
-        return TagKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath(VoidMinersRemastered.MODID, pName));
+        return TagKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(VoidMinersRemastered.MODID, pName));
     }
 }

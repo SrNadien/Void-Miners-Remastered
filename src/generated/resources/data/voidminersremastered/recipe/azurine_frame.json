@@ -2,15 +2,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "C": {
-      "item": "voidminersremastered:azurine"
-    },
-    "F": {
-      "item": "voidminersremastered:verdium_frame"
-    },
-    "O": {
-      "item": "minecraft:obsidian"
-    }
+    "C": "voidminersremastered:azurine",
+    "F": "voidminersremastered:verdium_frame",
+    "O": "minecraft:obsidian"
   },
   "pattern": [
     "COC",
@@ -18,7 +12,6 @@
     "COC"
   ],
   "result": {
-    "count": 1,
     "id": "voidminersremastered:azurine_frame"
   }
 }

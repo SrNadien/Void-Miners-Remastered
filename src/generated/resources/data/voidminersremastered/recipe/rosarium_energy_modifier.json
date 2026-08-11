@@ -2,15 +2,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "C": {
-      "item": "voidminersremastered:rosarium"
-    },
-    "M": {
-      "item": "voidminersremastered:amethystine_energy_modifier"
-    },
-    "c": {
-      "item": "minecraft:redstone"
-    }
+    "C": "voidminersremastered:rosarium",
+    "M": "voidminersremastered:amethystine_energy_modifier",
+    "c": "minecraft:redstone"
   },
   "pattern": [
     "CcC",
@@ -18,7 +12,6 @@
     "CcC"
   ],
   "result": {
-    "count": 1,
     "id": "voidminersremastered:rosarium_energy_modifier"
   }
 }

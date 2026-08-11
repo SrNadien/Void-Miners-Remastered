@@ -2,15 +2,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "C": {
-      "item": "voidminersremastered:aurantium"
-    },
-    "M": {
-      "item": "voidminersremastered:rubetine_speed_modifier"
-    },
-    "c": {
-      "item": "minecraft:sugar"
-    }
+    "C": "voidminersremastered:aurantium",
+    "M": "voidminersremastered:rubetine_speed_modifier",
+    "c": "minecraft:sugar"
   },
   "pattern": [
     "CcC",
@@ -18,7 +12,6 @@
     "CcC"
   ],
   "result": {
-    "count": 1,
     "id": "voidminersremastered:aurantium_speed_modifier"
   }
 }

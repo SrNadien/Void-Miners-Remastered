@@ -2,15 +2,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "F": {
-      "item": "voidminersremastered:frame_base"
-    },
-    "G": {
-      "item": "minecraft:gold_ingot"
-    },
-    "I": {
-      "item": "voidminersremastered:solar_rubetine"
-    }
+    "F": "voidminersremastered:frame_base",
+    "G": "minecraft:gold_ingot",
+    "I": "voidminersremastered:solar_rubetine"
   },
   "pattern": [
     "IGI",
@@ -18,7 +12,6 @@
     "IGI"
   ],
   "result": {
-    "count": 1,
     "id": "voidminersremastered:solar_rubetine_frame"
   }
 }

@@ -3,8 +3,9 @@ name: Build and Release
 on:
   push:
     branches:
-      - "Neo/1.21.1"
-
+      - "Neo/26.1.2"
+    paths:
+      - "src/**/*.java"
 jobs:
   build:
     runs-on: ubuntu-latest

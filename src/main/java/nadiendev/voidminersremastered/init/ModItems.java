@@ -12,16 +12,18 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 public class ModItems {
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(VoidMinersRemastered.MODID);
 
-    public static final DeferredItem<Item> STRUCTURE_BUILDER = ITEMS.register("structure_builder",
-        () -> new StructureBuilderItem(new Item.Properties().stacksTo(1)));
+    // 26.1.2 requires Item.Properties to carry its registry id, so every item goes through
+    // registerItem(...), which calls setId for us. Plain register(Supplier) would NPE at construction.
+    public static final DeferredItem<Item> STRUCTURE_BUILDER = ITEMS.<Item>registerItem("structure_builder",
+        StructureBuilderItem::new, () -> new Item.Properties().stacksTo(1));
 
-    public static final DeferredItem<Item> ULTIMATE_STELLAR_CORE = ITEMS.register("ultimate_stellar_core",
-            () -> new Item(new Item.Properties().rarity(Rarity.EPIC)));
+    public static final DeferredItem<Item> ULTIMATE_STELLAR_CORE = ITEMS.<Item>registerItem("ultimate_stellar_core",
+            Item::new, () -> new Item.Properties().rarity(Rarity.EPIC));
 
-    public static final DeferredItem<Item> MAX_STORAGE_UPGRADE_T1 = ITEMS.register("max_storage_upgrade_t1",
-            () -> new MaxStorageUpgradeItem(MinerConfigLoader.getInstance().UPGRADE_T1_SLOTS, new Item.Properties().rarity(Rarity.UNCOMMON)));
-    public static final DeferredItem<Item> MAX_STORAGE_UPGRADE_T2 = ITEMS.register("max_storage_upgrade_t2",
-            () -> new MaxStorageUpgradeItem(MinerConfigLoader.getInstance().UPGRADE_T2_SLOTS, new Item.Properties().rarity(Rarity.RARE)));
-    public static final DeferredItem<Item> MAX_STORAGE_UPGRADE_T3 = ITEMS.register("max_storage_upgrade_t3",
-            () -> new MaxStorageUpgradeItem(MinerConfigLoader.getInstance().UPGRADE_T3_SLOTS, new Item.Properties().rarity(Rarity.EPIC)));
+    public static final DeferredItem<Item> MAX_STORAGE_UPGRADE_T1 = ITEMS.<Item>registerItem("max_storage_upgrade_t1",
+            p -> new MaxStorageUpgradeItem(MinerConfigLoader.getInstance().UPGRADE_T1_SLOTS, p), () -> new Item.Properties().rarity(Rarity.UNCOMMON));
+    public static final DeferredItem<Item> MAX_STORAGE_UPGRADE_T2 = ITEMS.<Item>registerItem("max_storage_upgrade_t2",
+            p -> new MaxStorageUpgradeItem(MinerConfigLoader.getInstance().UPGRADE_T2_SLOTS, p), () -> new Item.Properties().rarity(Rarity.RARE));
+    public static final DeferredItem<Item> MAX_STORAGE_UPGRADE_T3 = ITEMS.<Item>registerItem("max_storage_upgrade_t3",
+            p -> new MaxStorageUpgradeItem(MinerConfigLoader.getInstance().UPGRADE_T3_SLOTS, p), () -> new Item.Properties().rarity(Rarity.EPIC));
 }

@@ -2,15 +2,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "C": {
-      "item": "voidminersremastered:caerium"
-    },
-    "F": {
-      "item": "voidminersremastered:azurine_frame"
-    },
-    "O": {
-      "item": "minecraft:obsidian"
-    }
+    "C": "voidminersremastered:caerium",
+    "F": "voidminersremastered:azurine_frame",
+    "O": "minecraft:obsidian"
   },
   "pattern": [
     "COC",
@@ -18,7 +12,6 @@
     "COC"
   ],
   "result": {
-    "count": 1,
     "id": "voidminersremastered:caerium_frame"
   }
 }

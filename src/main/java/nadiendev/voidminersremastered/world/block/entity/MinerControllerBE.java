@@ -15,6 +15,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.NonNullList;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -22,7 +23,8 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Containers;
 import net.minecraft.world.SimpleContainer;
@@ -37,19 +39,24 @@ import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.pattern.BlockInWorld;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.items.IItemHandler;
-import net.neoforged.neoforge.items.ItemHandlerHelper;
-import net.neoforged.neoforge.items.ItemStackHandler;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.ResourceHandlerUtil;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.item.ItemStacksResourceHandler;
+import net.neoforged.neoforge.transfer.item.ItemUtil;
 import org.jetbrains.annotations.Nullable;
-import org.mangorage.mangomultiblock.core.manager.MultiBlockManager;
-import org.mangorage.mangomultiblock.core.manager.RegisteredMultiBlockPattern;
-import org.mangorage.mangomultiblock.core.misc.MultiblockMatchResult;
+import nadiendev.mangomultiblock.core.manager.MultiBlockManager;
+import nadiendev.mangomultiblock.core.manager.RegisteredMultiBlockPattern;
+import nadiendev.mangomultiblock.core.misc.MultiblockMatchResult;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public class MinerControllerBE extends BlockEntity {
 
@@ -57,8 +64,8 @@ public class MinerControllerBE extends BlockEntity {
     private static final int BASE_OUTPUT_SLOTS = 9;
     private Item upgradeItem = Items.AIR;
 
-    private MinerEnergyStorage energyHandler = new MinerEnergyStorage(ENERGY_CAPACITY, ENERGY_CAPACITY, 0, 0);
-    private ItemStackHandler itemHandler = createItemHandler();
+    private MinerEnergyStorage energyHandler = createEnergyStorage(ENERGY_CAPACITY, ENERGY_CAPACITY, 0, 0);
+    private ItemStacksResourceHandler itemHandler = createItemHandler(BASE_OUTPUT_SLOTS);
 
     public boolean foundStructure = false;
     private int progress = 0;
@@ -67,7 +74,7 @@ public class MinerControllerBE extends BlockEntity {
 
     private final Map<BlockInWorld, MinerConfigLoader.ModifierConfig> modifierMap = new HashMap<>();
 
-    private ResourceLocation structure;
+    private Identifier structure;
     private String name;
 
     public boolean canSeeBedrockOrVoid = false;
@@ -81,11 +88,68 @@ public class MinerControllerBE extends BlockEntity {
 
     private int checkStructureTTL = 0;
 
-    private static ItemStackHandler createItemHandler() {
-        return new ItemStackHandler(BASE_OUTPUT_SLOTS) {
+    /**
+     * Output inventory of the miner.
+     *
+     * <p>{@code ItemStackHandler} is deprecated in 26.1.2 and {@code Capabilities.Item.BLOCK} resolves to
+     * {@code ResourceHandler<ItemResource>}, so the handler is now an {@link ItemStacksResourceHandler}.
+     * {@link #serialize}/{@link #deserialize} are overridden to keep writing the exact NBT layout the
+     * 1.21.1 {@code ItemStackHandler} produced ({@code {Items:[{Slot:i, id:.., count:.., components:{}}], Size:n}}),
+     * so already-built miners keep their inventory when the world is upgraded.
+     */
+    public static class MinerItemHandler extends ItemStacksResourceHandler {
+        public MinerItemHandler(int size) {
+            super(size);
+        }
+
+        @Override
+        @SuppressWarnings("deprecation") // ValueOutput#store(MapCodec, T) is the only way to merge a stack into a compound
+        public void serialize(ValueOutput output) {
+            ValueOutput.ValueOutputList items = output.childrenList("Items");
+            for (int i = 0; i < size(); i++) {
+                ItemStack stack = ItemUtil.getStack(this, i);
+                if (!stack.isEmpty()) {
+                    ValueOutput entry = items.addChild();
+                    entry.putInt("Slot", i);
+                    entry.store(ItemStack.MAP_CODEC, stack);
+                }
+            }
+            output.putInt("Size", size());
+        }
+
+        @Override
+        @SuppressWarnings("deprecation") // ValueInput#read(MapCodec) mirrors the write above
+        public void deserialize(ValueInput input) {
+            int storedSize = input.getIntOr("Size", size());
+            if (storedSize <= 0) storedSize = size();
+
+            NonNullList<ItemStack> loaded = NonNullList.withSize(storedSize, ItemStack.EMPTY);
+            input.childrenList("Items").ifPresent(list -> {
+                for (ValueInput entry : list) {
+                    int slot = entry.getIntOr("Slot", -1);
+                    if (slot >= 0 && slot < loaded.size()) {
+                        entry.read(ItemStack.MAP_CODEC).ifPresent(stack -> loaded.set(slot, stack));
+                    }
+                }
+            });
+            setStacks(loaded);
+        }
+    }
+
+    private MinerEnergyStorage createEnergyStorage(int capacity, int maxReceive, int maxExtract, int energy) {
+        return new MinerEnergyStorage(capacity, maxReceive, maxExtract, energy) {
             @Override
-            protected void onContentsChanged(int slot) {
-                super.onContentsChanged(slot);
+            protected void onEnergyChanged(int previousAmount) {
+                MinerControllerBE.this.setChanged();
+            }
+        };
+    }
+
+    private ItemStacksResourceHandler createItemHandler(int slots) {
+        return new MinerItemHandler(slots) {
+            @Override
+            protected void onContentsChanged(int index, ItemStack previousContents) {
+                MinerControllerBE.this.setChanged();
             }
         };
     }
@@ -93,36 +157,39 @@ public class MinerControllerBE extends BlockEntity {
     private void recalculateStorageFromUpgrades() {
         if(this.upgradeItem == Items.AIR) return;
 
-        int extraSlots = this.upgradeItem.components().get(ModDataComponents.MAX_STORAGE_UPGRADE_SLOTS.get());
+        Integer extraSlots = this.upgradeItem.components().get(ModDataComponents.MAX_STORAGE_UPGRADE_SLOTS.get());
+        if (extraSlots == null) return;
 
         int desiredSlots = BASE_OUTPUT_SLOTS + extraSlots;
-        if (desiredSlots != itemHandler.getSlots()) {
+        if (desiredSlots != itemHandler.size()) {
             replaceItemHandler(desiredSlots);
         }
     }
 
     private void replaceItemHandler(int newSlots) {
-        ItemStackHandler newHandler = new ItemStackHandler(newSlots) {
-            @Override
-            protected void onContentsChanged(int slot) {
-                super.onContentsChanged(slot);
-            }
-        };
+        ItemStacksResourceHandler newHandler = createItemHandler(newSlots);
 
         // Copy existing stacks into new handler
-        int copySlots = Math.min(itemHandler.getSlots(), newHandler.getSlots());
+        NonNullList<ItemStack> previous = itemHandler.copyToList();
+        int copySlots = Math.min(previous.size(), newSlots);
         for (int i = 0; i < copySlots; i++) {
-            newHandler.setStackInSlot(i, itemHandler.getStackInSlot(i));
+            ItemStack stack = previous.get(i);
+            if (!stack.isEmpty()) {
+                newHandler.set(i, ItemResource.of(stack), stack.getCount());
+            }
         }
 
         this.itemHandler = newHandler;
+
+        // The capability instance changed: tell the level so neighbours re-resolve it.
+        invalidateCapabilities();
     }
 
     public MinerControllerBE(BlockPos pPos, BlockState pBlockState) {
         super(ModBlockEntities.MINER_CONTROLLER_BASE_BE.get(), pPos, pBlockState);
     }
 
-    public void setup(ResourceLocation structure, String name) {
+    public void setup(Identifier structure, String name) {
         this.structure = structure;
         this.name = name;
         setupEnergyStorage();
@@ -141,7 +208,7 @@ public class MinerControllerBE extends BlockEntity {
                 energyHandler.setEnergy(storage);
             }
         } else {
-            energyHandler = new MinerEnergyStorage(storage, Integer.MAX_VALUE, 0, currentEnergy);
+            energyHandler = createEnergyStorage(storage, Integer.MAX_VALUE, 0, currentEnergy);
         }
     }
 
@@ -155,35 +222,35 @@ public class MinerControllerBE extends BlockEntity {
                 .append(Component.literal(name.toUpperCase() + " MINER").withColor(Integer.parseInt(ModRarities.getColorForCrystal(name).getHexColor().substring(1), 16))
                         .append(Component.literal(" ═══").withStyle(ChatFormatting.GRAY))));
 
-        MutableComponent status = Component.translatable("tooltip.voidminers.controller.status.status").withStyle(ChatFormatting.GOLD);
+        MutableComponent status = Component.translatable("tooltip.voidminersremastered.controller.status.status").withStyle(ChatFormatting.GOLD);
 
         switch (haltReason) {
             case NONE:
                 if(enoughPowerForNextOperation) {
-                    status.append(Component.translatable("tooltip.voidminers.controller.status.working").withStyle(ChatFormatting.GREEN));
+                    status.append(Component.translatable("tooltip.voidminersremastered.controller.status.working").withStyle(ChatFormatting.GREEN));
                     tooltip.add(status);
                 } else {
-                    status.append(Component.translatable("tooltip.voidminers.controller.status.mining_slow").withStyle(ChatFormatting.RED));
+                    status.append(Component.translatable("tooltip.voidminersremastered.controller.status.mining_slow").withStyle(ChatFormatting.RED));
                     tooltip.add(status);
-                    tooltip.add(Component.translatable("tooltip.voidminers.controller.status.not_enough_power_for_next_operation").withStyle(ChatFormatting.YELLOW));
+                    tooltip.add(Component.translatable("tooltip.voidminersremastered.controller.status.not_enough_power_for_next_operation").withStyle(ChatFormatting.YELLOW));
                 }
 
                 addMinerInfo(tooltip);
                 break;
             case NO_RECIPES_IN_DIMENSION:
-                status.append(Component.translatable("tooltip.voidminers.controller.status.mining_impossible").withStyle(ChatFormatting.RED));
+                status.append(Component.translatable("tooltip.voidminersremastered.controller.status.mining_impossible").withStyle(ChatFormatting.RED));
                 tooltip.add(status);
 
                 assert level != null;
-                String dimName = Component.translatable("dimension." +  level.dimension().location().toLanguageKey()).getString();
+                String dimName = Component.translatable("dimension." +  level.dimension().identifier().toLanguageKey()).getString();
 
-                tooltip.add(Component.translatable("tooltip.voidminers.controller.halt_reason.dimension_not_ok", dimName));
+                tooltip.add(Component.translatable("tooltip.voidminersremastered.controller.halt_reason.dimension_not_ok", dimName));
                 break;
             case STRUCTURE_NOT_FOUND: {
-                status.append(Component.translatable("tooltip.voidminers.controller.status.structure_incomplete").withStyle(ChatFormatting.RED));
+                status.append(Component.translatable("tooltip.voidminersremastered.controller.status.structure_incomplete").withStyle(ChatFormatting.RED));
                 tooltip.add(status);
 
-                tooltip.add(Component.translatable("tooltip.voidminers.controller.halt_reason.structure_not_found").withStyle(ChatFormatting.YELLOW));
+                tooltip.add(Component.translatable("tooltip.voidminersremastered.controller.halt_reason.structure_not_found").withStyle(ChatFormatting.YELLOW));
 
                 MiscUtil.getNeededBlocks(MiscUtil.structureMap.get(structure.toString())).forEach((string, integer) -> {
                     tooltip.add(Component.literal("• ").withStyle(ChatFormatting.GRAY)
@@ -194,33 +261,33 @@ public class MinerControllerBE extends BlockEntity {
                 break;
             }
             case TOO_MUCH_ITEM_MULTIPLIER:
-                status.append(Component.translatable("tooltip.voidminers.controller.status.mining_stopped").withStyle(ChatFormatting.RED));
+                status.append(Component.translatable("tooltip.voidminersremastered.controller.status.mining_stopped").withStyle(ChatFormatting.RED));
                 tooltip.add(status);
 
-                tooltip.add(Component.translatable("tooltip.voidminers.controller.halt_reason.too_much_item_multiplier", itemHandler.getSlots() * 64).withStyle(ChatFormatting.YELLOW));
+                tooltip.add(Component.translatable("tooltip.voidminersremastered.controller.halt_reason.too_much_item_multiplier", itemHandler.size() * 64).withStyle(ChatFormatting.YELLOW));
 
-                tooltip.add(Component.translatable("tooltip.voidminers.controller.max_storage_upgrade_tip").withStyle(ChatFormatting.YELLOW));
+                tooltip.add(Component.translatable("tooltip.voidminersremastered.controller.max_storage_upgrade_tip").withStyle(ChatFormatting.YELLOW));
 
                 addMinerInfo(tooltip);
                 break;
             case NOT_ENOUGH_EMPTY_SLOTS:
-                status.append(Component.translatable("tooltip.voidminers.controller.status.mining_stopped").withStyle(ChatFormatting.RED));
+                status.append(Component.translatable("tooltip.voidminersremastered.controller.status.mining_stopped").withStyle(ChatFormatting.RED));
                 tooltip.add(status);
-                tooltip.add(Component.translatable("tooltip.voidminers.controller.halt_reason.not_enough_empty_slots").withStyle(ChatFormatting.YELLOW));
+                tooltip.add(Component.translatable("tooltip.voidminersremastered.controller.halt_reason.not_enough_empty_slots").withStyle(ChatFormatting.YELLOW));
 
                 addMinerInfo(tooltip);
                 break;
             case NO_BEDROCK_OR_VOID_VIEW:
-                status.append(Component.translatable("tooltip.voidminers.controller.status.mining_stopped").withStyle(ChatFormatting.RED));
+                status.append(Component.translatable("tooltip.voidminersremastered.controller.status.mining_stopped").withStyle(ChatFormatting.RED));
                 tooltip.add(status);
-                tooltip.add(Component.translatable("tooltip.voidminers.controller.halt_reason.no_bedrock_or_void_view").withStyle(ChatFormatting.YELLOW));
+                tooltip.add(Component.translatable("tooltip.voidminersremastered.controller.halt_reason.no_bedrock_or_void_view").withStyle(ChatFormatting.YELLOW));
 
                 addMinerInfo(tooltip);
                 break;
             case NOT_ENOUGH_POWER:
-                status.append(Component.translatable("tooltip.voidminers.controller.status.mining_stopped").withStyle(ChatFormatting.RED));
+                status.append(Component.translatable("tooltip.voidminersremastered.controller.status.mining_stopped").withStyle(ChatFormatting.RED));
                 tooltip.add(status);
-                tooltip.add(Component.translatable("tooltip.voidminers.controller.status.not_enough_power").withStyle(ChatFormatting.YELLOW));
+                tooltip.add(Component.translatable("tooltip.voidminersremastered.controller.status.not_enough_power").withStyle(ChatFormatting.YELLOW));
 
                 addMinerInfo(tooltip);
                 break;
@@ -231,26 +298,26 @@ public class MinerControllerBE extends BlockEntity {
 
     private void addMinerInfo(List<Component> tooltip) {
         String energyBar = getEnergyBar(energyHandler.getEnergyStored(), energyHandler.getMaxEnergyStored());
-        tooltip.add(Component.translatable("tooltip.voidminers.controller.energy")
+        tooltip.add(Component.translatable("tooltip.voidminersremastered.controller.energy")
                 .append(Component.literal(String.format(
                         "%s §f%,d §7/ §f%,d RF", energyBar, energyHandler.getEnergyStored(), energyHandler.getMaxEnergyStored()))));
 
-        tooltip.add(Component.translatable("tooltip.voidminers.controller.consumption")
+        tooltip.add(Component.translatable("tooltip.voidminersremastered.controller.consumption")
                 .append(Component.literal(String.format(
                         "§f%,d RF/tick §b(%.2f×)", getRFPerTick(), getEnergyModifierMultiplier()))));
 
-        tooltip.add(Component.translatable("tooltip.voidminers.controller.duration")
+        tooltip.add(Component.translatable("tooltip.voidminersremastered.controller.duration")
                 .append(Component.literal(String.format(
                         "§f%d ticks §b(%.2f×)", getMaxProgress(), getSpeedModifierMultiplier()))));
 
         if (getItemModifierMultiplier() != 1.0f) {
-            tooltip.add(Component.translatable("tooltip.voidminers.controller.item_boost")
+            tooltip.add(Component.translatable("tooltip.voidminersremastered.controller.item_boost")
                     .append(Component.literal(String.format(
                             "§f%d×", (int) getItemModifierMultiplier()))));
         }
 
         float progressPercent = getMaxProgress() == 0 ? 0F : (float) getProgress() / getMaxProgress();
-        tooltip.add(Component.translatable("tooltip.voidminers.controller.progress")
+        tooltip.add(Component.translatable("tooltip.voidminersremastered.controller.progress")
                 .append(Component.literal(String.format(
                         "§r%s §f%.2f%%", getProgressBar(progressPercent), progressPercent * 100))));
 
@@ -307,12 +374,13 @@ public class MinerControllerBE extends BlockEntity {
     }
 
     @Override
-    protected void saveAdditional(CompoundTag pTag, HolderLookup.Provider pRegistries) {
-        super.saveAdditional(pTag, pRegistries);
+    protected void saveAdditional(ValueOutput output) {
+        super.saveAdditional(output);
 
-        CompoundTag data = new CompoundTag();
-        if (energyHandler != null) data.put("energy", energyHandler.serializeNBT(pRegistries));
-        data.put("items", itemHandler.serializeNBT(pRegistries));
+        ValueOutput data = output.child(VoidMinersRemastered.MODID);
+        // 1.21.1 wrote EnergyStorage#serializeNBT, which was a bare IntTag under "energy" -> same NBT.
+        if (energyHandler != null) data.putInt("energy", energyHandler.getEnergyStored());
+        itemHandler.serialize(data.child("items"));
         data.putString("upgradeItem", this.upgradeItem.toString());
         data.putInt("progress", this.progress);
         if (name != null) data.putString("name", this.name);
@@ -321,61 +389,39 @@ public class MinerControllerBE extends BlockEntity {
         data.putBoolean("canSeeBedrockOrVoid", canSeeBedrockOrVoid);
         data.putBoolean("foundStructure", foundStructure);
         data.putBoolean("enoughPower", enoughPower);
-
-        pTag.put(VoidMinersRemastered.MODID, data);
     }
 
     @Override
-    protected void loadAdditional(CompoundTag pTag, HolderLookup.Provider pRegistries) {
-        super.loadAdditional(pTag, pRegistries);
-        CompoundTag data = pTag.getCompound(VoidMinersRemastered.MODID);
-        if (data.isEmpty())
+    protected void loadAdditional(ValueInput input) {
+        super.loadAdditional(input);
+
+        Optional<ValueInput> maybeData = input.child(VoidMinersRemastered.MODID);
+        if (maybeData.isEmpty())
             return;
 
-        if (data.contains("energy")) {
-            energyHandler.deserializeNBT(pRegistries, data.get("energy"));
-        }
+        ValueInput data = maybeData.get();
 
-        if (data.contains("items")) {
-            itemHandler.deserializeNBT(pRegistries, data.getCompound("items"));
-        }
+        data.getInt("energy").ifPresent(stored -> energyHandler.setEnergy(stored));
 
-        if (data.contains("upgradeItem")) {
-            ResourceLocation itemId = ResourceLocation.tryParse(data.getString("upgradeItem"));
-            if (itemId != null) {
-                this.upgradeItem = BuiltInRegistries.ITEM.get(itemId);
-            } else {
-                this.upgradeItem = Items.AIR;
-            }
-        }
+        data.child("items").ifPresent(itemHandler::deserialize);
 
-        if (data.contains("progress")) {
-            progress = data.getInt("progress");
-        }
+        data.getString("upgradeItem").ifPresent(raw -> {
+            Identifier itemId = Identifier.tryParse(raw);
+            Item item = itemId != null ? BuiltInRegistries.ITEM.getValue(itemId) : null;
+            this.upgradeItem = item != null ? item : Items.AIR;
+        });
 
-        if (data.contains("name")) {
-            name = data.getString("name");
-        }
+        this.progress = data.getIntOr("progress", this.progress);
 
-        if (data.contains("structure")) {
-            structure = ResourceLocation.parse(data.getString("structure"));
-        }
+        data.getString("name").ifPresent(loaded -> this.name = loaded);
 
-        if (data.contains("showStructure")) {
-            showStructure = data.getBoolean("showStructure");
-        }
+        data.getString("structure").ifPresent(loaded -> this.structure = Identifier.parse(loaded));
 
-        if (data.contains("canSeeBedrockOrVoid")) {
-            canSeeBedrockOrVoid = data.getBoolean("canSeeBedrockOrVoid");
-        }
-
-        if (data.contains("foundStructure")) {
-            foundStructure = data.getBoolean("foundStructure");
-        }
-
-        if (data.contains("enoughRF")) {
-            enoughPower = data.getBoolean("enoughRF");
-        }
+        this.showStructure = data.getBooleanOr("showStructure", this.showStructure);
+        this.canSeeBedrockOrVoid = data.getBooleanOr("canSeeBedrockOrVoid", this.canSeeBedrockOrVoid);
+        this.foundStructure = data.getBooleanOr("foundStructure", this.foundStructure);
+        // NOTE: key mismatch preserved from 1.21.1 -- saved as "enoughPower", read back as "enoughRF".
+        this.enoughPower = data.getBooleanOr("enoughRF", this.enoughPower);
 
         recalculateStorageFromUpgrades();
 
@@ -390,9 +436,10 @@ public class MinerControllerBE extends BlockEntity {
 
     @Override
     public CompoundTag getUpdateTag(HolderLookup.Provider pRegistries) {
-        CompoundTag tag = super.getUpdateTag(pRegistries);
-        saveAdditional(tag, pRegistries);
-        return tag;
+        // getUpdateTag still returns a CompoundTag, while saveAdditional now takes a ValueOutput.
+        // saveCustomOnly(Provider) is the vanilla bridge (BlockEntity.java:160-169): it builds a
+        // TagValueOutput, runs saveAdditional on it and returns the resulting tag.
+        return saveCustomOnly(pRegistries);
     }
 
     @Nullable
@@ -401,17 +448,14 @@ public class MinerControllerBE extends BlockEntity {
         return ClientboundBlockEntityDataPacket.create(this);
     }
 
-    @Override
-    public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider pRegistries) {
-        super.handleUpdateTag(tag, pRegistries);
-        this.loadAdditional(tag, pRegistries);
-    }
+    // handleUpdateTag(ValueInput) is no longer overridden: the NeoForge default
+    // (IBlockEntityExtension.java:47) already routes to loadWithComponents -> loadAdditional.
 
     public MinerEnergyStorage getEnergyStorage() {
         return energyHandler;
     }
 
-    public ItemStackHandler getItemHandler() {
+    public ItemStacksResourceHandler getItemHandler() {
         return itemHandler;
     }
 
@@ -421,8 +465,8 @@ public class MinerControllerBE extends BlockEntity {
 
     private long lastProcessedGameTime = Long.MIN_VALUE;
 
-    public void tick(Level pLevel, BlockPos pPos, BlockState pState, ResourceLocation structure, String name) {
-        if (level == null || level.isClientSide) return;
+    public void tick(Level pLevel, BlockPos pPos, BlockState pState, Identifier structure, String name) {
+        if (level == null || level.isClientSide()) return;
 
         long gameTime = level.getGameTime();
 
@@ -476,7 +520,7 @@ public class MinerControllerBE extends BlockEntity {
             int itemModMultMultiplier = (int) getItemModifierMultiplier();
 
             if (!MinerConfigLoader.getInstance().MINERS_FILL_ALL_SLOTS) {
-                if (itemModMultMultiplier > itemHandler.getSlots() * 64) {
+                if (itemModMultMultiplier > itemHandler.size() * 64) {
                     haltReason = HaltReason.TOO_MUCH_ITEM_MULTIPLIER;
                     return;
                 }
@@ -519,16 +563,14 @@ public class MinerControllerBE extends BlockEntity {
             allOutputs.add(recipe.output().copy());
         }
 
-        ItemStack output = getBoostedStack(getWeightedItem(allOutputs, level.random));
+        ItemStack output = getBoostedStack(getWeightedItem(allOutputs, level.getRandom()));
 
         if(!MinerConfigLoader.getInstance().MINERS_AUTO_EXPORT_INSTEAD_OF_FILLING_THEIR_OWN_INVENTORY) {
-            ItemStack remaining;
-
-            for (int i = 0; i < itemHandler.getSlots(); i++) {
-                if (!isItemValid(output, itemHandler.getStackInSlot(i))) continue;
-                remaining = itemHandler.insertItem(i, output.copy(), false);
-                if (remaining.isEmpty()) break;
-                output = remaining;
+            for (int i = 0; i < itemHandler.size(); i++) {
+                if (output.isEmpty()) break;
+                if (!isItemValid(output, ItemUtil.getStack(itemHandler, i))) continue;
+                // Opens (and commits) its own root transaction; returns what did not fit.
+                output = ItemUtil.insertItemReturnRemaining(itemHandler, i, output, false, null);
             }
         } else {
             pushItemsToNeighbors(output);
@@ -539,10 +581,11 @@ public class MinerControllerBE extends BlockEntity {
     }
 
     private void pushItemsToNeighbors(ItemStack outputStack) {
-        if (level == null || level.isClientSide) return;
+        if (level == null || level.isClientSide()) return;
         if (outputStack.isEmpty()) return;
 
         int remainingCount = outputStack.getCount();
+        ItemResource resource = ItemResource.of(outputStack);
 
         for (Direction dir : Direction.values()) {
             if (remainingCount <= 0) break;
@@ -551,29 +594,26 @@ public class MinerControllerBE extends BlockEntity {
             BlockEntity neighbor = level.getBlockEntity(neighborPos);
             if (neighbor == null) continue;
 
-            IItemHandler receiver = level.getCapability(
-                    Capabilities.ItemHandler.BLOCK,
+            ResourceHandler<ItemResource> receiver = level.getCapability(
+                    Capabilities.Item.BLOCK,
                     neighborPos,
                     dir.getOpposite()
             );
 
             if (receiver == null) continue;
 
-            ItemStack toPush = outputStack.copyWithCount(remainingCount);
-            ItemStack remaining = ItemHandlerHelper.insertItemStacked(
-                    receiver,
-                    toPush,
-                    false
-            );
+            // insertStacking with a null transaction opens a root transaction and commits it,
+            // which is the 26.1.2 equivalent of ItemHandlerHelper.insertItemStacked(handler, stack, false).
+            int inserted = ResourceHandlerUtil.insertStacking(receiver, resource, remainingCount, null);
 
-            remainingCount = remaining.getCount();
+            remainingCount -= inserted;
         }
     }
 
     private boolean hasEnoughEmptySlots(int neededSlots) {
         int emptyCount = 0;
-        for (int i = 0; i < itemHandler.getSlots(); i++) {
-            if (itemHandler.getStackInSlot(i).isEmpty()) {
+        for (int i = 0; i < itemHandler.size(); i++) {
+            if (itemHandler.getResource(i).isEmpty()) {
                 emptyCount++;
                 if (emptyCount >= neededSlots) {
                     return true;
@@ -646,7 +686,8 @@ public class MinerControllerBE extends BlockEntity {
             assert level != null;
             if(level.getBlockState(check).is(Blocks.BEDROCK)) return true;
 
-            if (level.getBlockState(check).propagatesSkylightDown(level, check) || level.isFluidAtPosition(check, (fluidState -> !fluidState.isEmpty()))) continue;
+            // propagatesSkylightDown is now precomputed on the BlockState (BlockBehaviour.java:545) and takes no arguments.
+            if (level.getBlockState(check).propagatesSkylightDown() || level.isFluidAtPosition(check, (fluidState -> !fluidState.isEmpty()))) continue;
 
             return false;
         }
@@ -655,10 +696,13 @@ public class MinerControllerBE extends BlockEntity {
     }
 
     private boolean isItemHandlerFull() {
-        if(itemHandler.getStackInSlot(itemHandler.getSlots() - 1).getCount() == 0) return false;
+        int size = itemHandler.size();
+        if (size == 0) return true;
 
-        for (int i = 0; i < itemHandler.getSlots(); i++) {
-            if (itemHandler.getStackInSlot(i).getCount() < itemHandler.getStackInSlot(i).getMaxStackSize()) {
+        if (itemHandler.getAmountAsLong(size - 1) == 0) return false;
+
+        for (int i = 0; i < size; i++) {
+            if (itemHandler.getAmountAsLong(i) < itemHandler.getCapacityAsLong(i, itemHandler.getResource(i))) {
                 return false;
             }
         }
@@ -667,7 +711,11 @@ public class MinerControllerBE extends BlockEntity {
     }
 
     private List<MinerRecipe> allRecipes() {
-        if (level == null || level.isClientSide) {
+        // Level#getRecipeManager() no longer exists; the recipe map lives behind
+        // ServerLevel#recipeAccess() (ServerLevel.java:1475) -> RecipeManager#recipeMap()
+        // (RecipeManager.java:263) -> RecipeMap#byType (RecipeMap.java:55).
+        // The client no longer receives the full recipe list, hence the server-only guard (unchanged behaviour).
+        if (!(level instanceof ServerLevel serverLevel)) {
             return new ArrayList<>();
         }
 
@@ -675,7 +723,7 @@ public class MinerControllerBE extends BlockEntity {
             return new ArrayList<>();
         }
 
-        return level.getRecipeManager().getAllRecipesFor(MinerRecipe.Type.INSTANCE)
+        return serverLevel.recipeAccess().recipeMap().byType(MinerRecipe.TYPE)
                 .stream()
                 .map(RecipeHolder::value)
                 .filter(recipe -> {
@@ -694,10 +742,10 @@ public class MinerControllerBE extends BlockEntity {
     }
 
     public void drops() {
-        SimpleContainer container = new SimpleContainer(itemHandler.getSlots());
+        SimpleContainer container = new SimpleContainer(itemHandler.size());
 
-        for (int i = 0; i < itemHandler.getSlots(); i++) {
-            container.addItem(itemHandler.getStackInSlot(i));
+        for (int i = 0; i < itemHandler.size(); i++) {
+            container.addItem(ItemUtil.getStack(itemHandler, i));
         }
 
         container.addItem(new ItemStack(this.upgradeItem));
@@ -714,7 +762,7 @@ public class MinerControllerBE extends BlockEntity {
         for (WeightedStack item : items) {
             randomValue -= item.weight;
             if (randomValue <= 0) {
-                return item.stack;
+                return item.stack();
             }
         }
 
@@ -753,7 +801,7 @@ public class MinerControllerBE extends BlockEntity {
                 });
     }
 
-    public ResourceLocation getStructure() {
+    public Identifier getStructure() {
         return structure;
     }
 
