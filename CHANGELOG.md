@@ -4,7 +4,7 @@
 
 - **Ores from other mods in the miners**, loaded only when the mod is installed (`neoforge:mod_loaded`):
   Mekanism, AllTheModium, AllTheOres, Oritech, Create, Immersive Engineering, Actually Additions,
-  Ad Astra (per planet), Bigger Reactors, Create: Better Motors, Create Nuclear, Draconic Evolution,
+  Ad Astra (per planet), Bigger Reactors Revived, Create: Better Motors, Create Nuclear, Draconic Evolution,
   Ender IO Evolution, Energized Power, Malum, Mekanism Extras, Mekanism More Machine, Modern Foundry,
   Mystical Agriculture / Agradditions, Occultism, Powah, Small Progressions, UltimateFoods and XyCraft World.
   Each ore is available in the dimension where it generates.
@@ -18,21 +18,6 @@
   outputs energy (all sides by default). Interval configurable with `EXPORT_INTERVAL_TICKS`.
 - **Fusion connected textures** (optional): frames, glass and modifiers connect across the multiblock
   when Fusion is installed.
-- Recipes can require a block anywhere under the Miner Controller (`blockUnderneath`), also from KubeJS.
-- Miners stop when a block sits between the controller and the glass panels.
-- The miner laser stops at the block it hits.
 - JEI: hold SHIFT for percentages, CTRL for the full weight/chance value; recipe ID shown.
 - `c:gems/*` and `c:storage_blocks/*` tags.
-- Controller item tooltips with energy usage, duration and capacity.
-- Structures are also accepted rotated 90°.
 
-## Changed
-
-- Gems appear more often in the miners.
-- Better performance with tick acceleration; item multipliers now use their decimal part.
-- Glass Panel is breakable by hand and no longer suffocates or blocks mob spawning rules.
-
-## Fixed
-
-- Max Storage Upgrade T2 and T3 recipes required themselves.
-- Translations other than English were registered under the wrong key and never showed.
