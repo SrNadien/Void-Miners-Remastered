@@ -1,12 +1,13 @@
 {
   "type": "voidminersremastered:miner",
+  "allowHigherTiers": false,
   "dimension": "minecraft:the_nether",
   "minTier": 3,
   "output": {
     "stack": {
-      "count": 1,
+      "count": 12,
       "id": "voidminersremastered:verdium"
     },
-    "weight": 4.0
+    "weight": 12.0
   }
 }

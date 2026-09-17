@@ -13,7 +13,7 @@ public class ModBlockEntities {
         DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, VoidMinersRemastered.MODID);
 
 
-    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<MinerControllerBE>> MINER_CONTROLLER_BASE_BE =
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<MinerControllerBE>> MINER_CONTROLLER_BE =
             BLOCK_ENTITIES.register("controller_base",
                     () -> BlockEntityType.Builder.of(
                             MinerControllerBE::new,
@@ -29,7 +29,7 @@ public class ModBlockEntities {
                     ).build(null)
             );
 
-    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<SolarControllerBE>> SOLAR_BASE_BE =
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<SolarControllerBE>> SOLAR_CONTROLLER_BE =
             BLOCK_ENTITIES.register("solar_base",
                     () -> BlockEntityType.Builder.of(
                             SolarControllerBE::new,

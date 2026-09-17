@@ -1,6 +1,6 @@
 package nadiendev.voidminersremastered.world.item;
 
-import nadiendev.voidminersremastered.util.CustomColorUtil;
+import nadiendev.voidminersremastered.util.ColorUtil;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.world.item.BlockItem;
@@ -8,9 +8,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 
 public class ColoredBlockItem extends BlockItem {
-    private final CustomColorUtil color;
+    private final ColorUtil color;
 
-    public ColoredBlockItem(Block block, Properties properties, CustomColorUtil color) {
+    public ColoredBlockItem(Block block, Properties properties, ColorUtil color) {
         super(block, properties);
         this.color = color;
     }

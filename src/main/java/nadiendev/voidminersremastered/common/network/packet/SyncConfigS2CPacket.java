@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-public record SyncConfigS2CPacket(Map<String, MinerConfigLoader.Config> minerConfigs) implements CustomPacketPayload {
+public record SyncConfigS2CPacket(Map<String, MinerConfigLoader.ControllerConfig> minerConfigs) implements CustomPacketPayload {
 
     public static final CustomPacketPayload.Type<SyncConfigS2CPacket> TYPE = 
         new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(VoidMinersRemastered.MODID, "sync_config"));
@@ -22,7 +22,7 @@ public record SyncConfigS2CPacket(Map<String, MinerConfigLoader.Config> minerCon
         ByteBufCodecs.map(
             HashMap::new,
             ByteBufCodecs.STRING_UTF8,
-            MinerConfigLoader.Config.STREAM_CODEC
+            MinerConfigLoader.ControllerConfig.STREAM_CODEC
         ),
         SyncConfigS2CPacket::minerConfigs,
         SyncConfigS2CPacket::new

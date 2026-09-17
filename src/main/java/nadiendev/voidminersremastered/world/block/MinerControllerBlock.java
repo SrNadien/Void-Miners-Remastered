@@ -1,9 +1,14 @@
 package nadiendev.voidminersremastered.world.block;
 
+import net.minecraft.ChatFormatting;
+import net.minecraft.world.item.TooltipFlag;
+import nadiendev.voidminersremastered.config.MinerConfigLoader;
 import nadiendev.voidminersremastered.init.ModDataComponents;
-import nadiendev.voidminersremastered.util.CustomColorUtil;
+import nadiendev.voidminersremastered.init.ModItems;
+import nadiendev.voidminersremastered.util.ColorUtil;
 import nadiendev.voidminersremastered.world.block.entity.MinerControllerBE;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
@@ -24,11 +29,13 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
+
 public class MinerControllerBlock extends ColoredBlock implements EntityBlock {
     final ResourceLocation structure;
     final String name;
 
-    public MinerControllerBlock(Properties pProperties, ResourceLocation structure, String name, CustomColorUtil color) {
+    public MinerControllerBlock(Properties pProperties, ResourceLocation structure, String name, ColorUtil color) {
         super(pProperties, color);
         this.structure = structure;
         this.name = name;
@@ -63,6 +70,12 @@ public class MinerControllerBlock extends ColoredBlock implements EntityBlock {
         if (pPlayer.isCrouching()) {
             if (blockEntity != null && !blockEntity.foundStructure) {
                 blockEntity.updateShowStructure();
+            } else if (blockEntity != null) {
+                Direction side = blockEntity.toggleExportSide(pHitResult.getDirection());
+                pPlayer.displayClientMessage(side == null
+                        ? Component.translatable("client_message.voidminers.export.disabled")
+                        : Component.translatable("client_message.voidminers.export.enabled",
+                                Component.translatable("tooltip.voidminers.controller.export.side." + side.getName())), true);
             }
             return InteractionResult.CONSUME;
         }
@@ -84,7 +97,8 @@ public class MinerControllerBlock extends ColoredBlock implements EntityBlock {
             return ItemInteractionResult.sidedSuccess(pLevel.isClientSide());
         }
 
-        if(pStack.getItem().components().get(ModDataComponents.MAX_STORAGE_UPGRADE_SLOTS.get()) != null) {
+        if (pStack.getItem().components().get(ModDataComponents.MAX_STORAGE_UPGRADE_SLOTS.get()) != null) {
+            assert blockEntity != null;
             handleUpgrade(blockEntity, pPlayer, pStack, pHand, pLevel, pState, pPos);
             return ItemInteractionResult.CONSUME;
         }
@@ -97,28 +111,28 @@ public class MinerControllerBlock extends ColoredBlock implements EntityBlock {
         Item newUpgradeItem = pStack.getItem();
 
         if (currentUpgradeItem == newUpgradeItem) {
-            pPlayer.displayClientMessage(Component.translatable("client_message.voidminers.max_storage_upgrades.upgrade_already_applied"), true);
+            pPlayer.displayClientMessage(Component.translatable("client_message.voidminers.upgrades.upgrade_already_applied"), true);
             return;
         }
 
         int newAddedSlots = 0;
 
-        if(newUpgradeItem.components().get(ModDataComponents.MAX_STORAGE_UPGRADE_SLOTS.get()) != null) {
+        if (newUpgradeItem.components().get(ModDataComponents.MAX_STORAGE_UPGRADE_SLOTS.get()) != null) {
             newAddedSlots = newUpgradeItem.components().get(ModDataComponents.MAX_STORAGE_UPGRADE_SLOTS.get());
         } else {
             return;
         }
 
-        if(currentUpgradeItem != Items.AIR) {
+        if (currentUpgradeItem != Items.AIR) {
             int currentAddedSlots = currentUpgradeItem.components().get(ModDataComponents.MAX_STORAGE_UPGRADE_SLOTS.get());
 
             if (currentAddedSlots > newAddedSlots) {
-                pPlayer.displayClientMessage(Component.translatable("client_message.voidminers.max_storage_upgrades.upgrade_already_applied_is_higher_tier"), true);
+                pPlayer.displayClientMessage(Component.translatable("client_message.voidminers.upgrades.max_storage.upgrade_already_applied_is_higher_tier"), true);
                 return;
             }
         }
 
-        blockEntity.setAppliedUpgradeItem(newUpgradeItem);
+        blockEntity.setUpgradeItem(newUpgradeItem);
 
         if (!pPlayer.getAbilities().instabuild) {
             pStack.shrink(1);
@@ -137,7 +151,7 @@ public class MinerControllerBlock extends ColoredBlock implements EntityBlock {
             blockEntity.getLevel().sendBlockUpdated(pPos, pState, pState, 3);
         }
 
-        pPlayer.displayClientMessage(Component.translatable("client_message.voidminers.max_storage_upgrades.upgrade_applied", newAddedSlots), true);
+        pPlayer.displayClientMessage(Component.translatable("client_message.voidminers.upgrades.max_storage.upgrade_applied", newAddedSlots), true);
     }
 
     @Override
@@ -166,5 +180,41 @@ public class MinerControllerBlock extends ColoredBlock implements EntityBlock {
                 controllerBE.tick(pLevel, blockPos, blockState, structure, name);
             }
         });
+    }
+
+    @Override
+    public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+        MinerConfigLoader.ControllerConfig config = MinerConfigLoader.getInstance().getControllerConfig(name);
+
+        tooltipComponents.add(Component.literal(String.format("Energy Per Tick: %s", formatEnergy(config.energyConsumptionPerTick()))).withStyle(ChatFormatting.YELLOW));
+        tooltipComponents.add(Component.literal(String.format("Duration: %s tick", config.duration())).withStyle(ChatFormatting.GREEN));
+        tooltipComponents.add(Component.literal(String.format("Energy Capacity: %s", formatEnergy(config.energyStorage()))).withStyle(ChatFormatting.GOLD));
+
+        super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
+    }
+
+    private static String formatEnergy(int value) {
+        if (value < 1000) {
+            return value + " FE";
+        }
+
+        String[] units = {"FE", "KFE", "MFE", "GFE"};
+        double scaled = value;
+        int unitIndex = 0;
+
+        while (scaled >= 1000.0 && unitIndex < units.length - 1) {
+            scaled /= 1000.0;
+            unitIndex++;
+        }
+
+        double rounded = Math.round(scaled * 100.0) / 100.0;
+        if (rounded >= 1000.0 && unitIndex < units.length - 1) {
+            scaled = rounded / 1000.0;
+            unitIndex++;
+        } else {
+            scaled = rounded;
+        }
+
+        return String.format("%.2f %s", scaled, units[unitIndex]);
     }
 }

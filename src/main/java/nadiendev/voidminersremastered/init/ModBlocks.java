@@ -1,10 +1,9 @@
 package nadiendev.voidminersremastered.init;
 
 import nadiendev.voidminersremastered.VoidMinersRemastered;
-import nadiendev.voidminersremastered.util.CustomColorUtil;
+import nadiendev.voidminersremastered.util.ColorUtil;
 import nadiendev.voidminersremastered.world.block.ModifierBlock;
 import nadiendev.voidminersremastered.world.item.ColoredBlockItem;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Rarity;
@@ -18,8 +17,7 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 import java.util.function.Supplier;
 
 public class ModBlocks {
-    public static final DeferredRegister<Block> BLOCKS =
-            DeferredRegister.create(Registries.BLOCK, VoidMinersRemastered.MODID);
+    public static final DeferredRegister<Block> BLOCKS = DeferredRegister.createBlocks(VoidMinersRemastered.MODID);
 
     public static final DeferredHolder<Block, Block> FRAME_BASE = registerBlock("frame_base",
             () -> new Block(
@@ -40,10 +38,13 @@ public class ModBlocks {
     public static final DeferredHolder<Block, TransparentBlock> GLASS_PANEL = registerBlock("glass_panel",
             () -> new TransparentBlock(
                     BlockBehaviour.Properties.of()
-                            .strength(10, 5)
-                            .requiresCorrectToolForDrops()
+                            .strength(0.3F)
                             .sound(SoundType.GLASS)
                             .noOcclusion()
+                            .isValidSpawn((state, getter, pos, type) -> false)
+                            .isRedstoneConductor((state, getter, pos) -> false)
+                            .isSuffocating((state, getter, pos) -> false)
+                            .isViewBlocking((state, getter, pos) -> false)
             )
     );
 
@@ -53,6 +54,7 @@ public class ModBlocks {
                             .strength(5, 6)
                             .requiresCorrectToolForDrops(),
                     "null",
+                    ColorUtil.NULL_COLOR,
                     ModifierType.NULL
             )
     );
@@ -63,13 +65,7 @@ public class ModBlocks {
         return toReturn;
     }
 
-    public static <T extends Block> DeferredHolder<Block, T> registerBlock(String name, Supplier<T> block, Rarity rarity) {
-        DeferredHolder<Block, T> toReturn = BLOCKS.register(name, block);
-        registerBlockItem(name, toReturn, rarity);
-        return toReturn;
-    }
-
-    public static <T extends Block> DeferredHolder<Block, T> registerColoredBlock(String name, Supplier<T> block, Rarity rarity, CustomColorUtil color) {
+    public static <T extends Block> DeferredHolder<Block, T> registerColoredBlock(String name, Supplier<T> block, Rarity rarity, ColorUtil color) {
         DeferredHolder<Block, T> toReturn = BLOCKS.register(name, block);
         registerColoredBlockItem(name, toReturn, rarity, color);
         return toReturn;
@@ -79,11 +75,7 @@ public class ModBlocks {
         return ModItems.ITEMS.register(name, () -> new BlockItem(block.get(), new Item.Properties()));
     }
 
-    private static <T extends Block> DeferredHolder<Item, BlockItem> registerBlockItem(String name, DeferredHolder<Block, T> block, Rarity rarity) {
-        return ModItems.ITEMS.register(name, () -> new BlockItem(block.get(), new Item.Properties().rarity(rarity)));
-    }
-
-    private static <T extends Block> DeferredHolder<Item, BlockItem> registerColoredBlockItem(String name, DeferredHolder<Block, T> block, Rarity rarity, CustomColorUtil color) {
+    private static <T extends Block> DeferredHolder<Item, BlockItem> registerColoredBlockItem(String name, DeferredHolder<Block, T> block, Rarity rarity, ColorUtil color) {
         return ModItems.ITEMS.register(name, () -> new ColoredBlockItem(block.get(), new Item.Properties().rarity(rarity), color));
     }
 }

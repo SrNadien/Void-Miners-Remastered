@@ -1,0 +1,18 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "ad_astra"
+    }
+  ],
+  "type": "voidminersremastered:miner",
+  "dimension": "ad_astra:venus",
+  "minTier": 4,
+  "output": {
+    "stack": {
+      "count": 1,
+      "id": "ad_astra:venus_calorite_ore"
+    },
+    "weight": 5.0
+  }
+}

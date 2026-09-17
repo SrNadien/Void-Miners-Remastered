@@ -1,0 +1,18 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "draconicevolution"
+    }
+  ],
+  "type": "voidminersremastered:miner",
+  "dimension": "minecraft:overworld",
+  "minTier": 3,
+  "output": {
+    "stack": {
+      "count": 1,
+      "id": "draconicevolution:deepslate_draconium_ore"
+    },
+    "weight": 0.5
+  }
+}

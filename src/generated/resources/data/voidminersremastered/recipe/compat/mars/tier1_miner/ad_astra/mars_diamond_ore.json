@@ -1,0 +1,18 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "ad_astra"
+    }
+  ],
+  "type": "voidminersremastered:miner",
+  "dimension": "ad_astra:mars",
+  "minTier": 1,
+  "output": {
+    "stack": {
+      "count": 1,
+      "id": "ad_astra:mars_diamond_ore"
+    },
+    "weight": 2.0
+  }
+}

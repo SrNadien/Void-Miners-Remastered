@@ -1,15 +1,15 @@
 package nadiendev.voidminersremastered.world.item;
 
-import nadiendev.voidminersremastered.util.CustomColorUtil;
+import nadiendev.voidminersremastered.util.ColorUtil;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 
 public class ColoredItem extends Item {
-    private final CustomColorUtil color;
+    private final ColorUtil color;
 
-    public ColoredItem(Properties properties, CustomColorUtil color) {
+    public ColoredItem(Properties properties, ColorUtil color) {
         super(properties);
         this.color = color;
     }

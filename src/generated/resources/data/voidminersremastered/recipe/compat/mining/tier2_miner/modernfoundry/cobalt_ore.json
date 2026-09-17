@@ -1,0 +1,22 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "modernfoundry"
+    },
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "allthemodium"
+    }
+  ],
+  "type": "voidminersremastered:miner",
+  "dimension": "allthemodium:mining",
+  "minTier": 2,
+  "output": {
+    "stack": {
+      "count": 1,
+      "id": "modernfoundry:cobalt_ore"
+    },
+    "weight": 3.0
+  }
+}

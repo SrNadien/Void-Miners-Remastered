@@ -49,64 +49,67 @@ public class MinerConfigLoader {
     public boolean MINERS_AUTO_EXPORT_INSTEAD_OF_FILLING_THEIR_OWN_INVENTORY = false;
 
     @Expose
-    public Map<String, Config> MINER_CONFIGS = MapUtil.of(
-            MapUtil.createEntry("rubetine", new Config(10000000, 1000, 300,
+    public int EXPORT_INTERVAL_TICKS = 10;
+
+    @Expose
+    public Map<String, ControllerConfig> MINER_CONFIGS = MapUtil.of(
+            MapUtil.createEntry("rubetine", new ControllerConfig(10000000, 1000, 300,
                     MapUtil.of(
                             MapUtil.createEntry("energy", new ModifierConfig(0.85f, 1.00f, 1.00f)),
                             MapUtil.createEntry("speed", new ModifierConfig(1.10f, 1.10f, 1.00f)),
                             MapUtil.createEntry("item", new ModifierConfig(1.50f, 1.00f, 1.50f))
                     )
             )),
-            MapUtil.createEntry("aurantium", new Config(25000000, 900, 350,
+            MapUtil.createEntry("aurantium", new ControllerConfig(25000000, 900, 350,
                     MapUtil.of(
                             MapUtil.createEntry("energy", new ModifierConfig(0.83f, 1.00f, 1.00f)),
                             MapUtil.createEntry("speed", new ModifierConfig(1.12f, 1.12f, 1.00f)),
                             MapUtil.createEntry("item", new ModifierConfig(1.55f, 1.00f, 1.60f))
                     )
             )),
-            MapUtil.createEntry("citrinetine", new Config(50000000,800, 400,
+            MapUtil.createEntry("citrinetine", new ControllerConfig(50000000,800, 400,
                     MapUtil.of(
                             MapUtil.createEntry("energy", new ModifierConfig(0.81f, 1.00f, 1.00f)),
                             MapUtil.createEntry("speed", new ModifierConfig(1.14f, 1.14f, 1.00f)),
                             MapUtil.createEntry("item", new ModifierConfig(1.60f, 1.00f, 1.70f))
                     )
             )),
-            MapUtil.createEntry("verdium", new Config(100000000,700, 450,
+            MapUtil.createEntry("verdium", new ControllerConfig(100000000,700, 450,
                     MapUtil.of(
                             MapUtil.createEntry("energy", new ModifierConfig(0.79f, 1.00f, 1.00f)),
                             MapUtil.createEntry("speed", new ModifierConfig(1.16f, 1.16f, 1.00f)),
                             MapUtil.createEntry("item", new ModifierConfig(1.65f, 1.00f, 1.80f))
                     )
             )),
-            MapUtil.createEntry("azurine", new Config(250000000,600, 500,
+            MapUtil.createEntry("azurine", new ControllerConfig(250000000,600, 500,
                     MapUtil.of(
                             MapUtil.createEntry("energy", new ModifierConfig(0.77f, 1.00f, 1.00f)),
                             MapUtil.createEntry("speed", new ModifierConfig(1.18f, 1.18f, 1.00f)),
                             MapUtil.createEntry("item", new ModifierConfig(1.70f, 1.00f, 1.90f))
                     )
             )),
-            MapUtil.createEntry("caerium", new Config(500000000,500, 550,
+            MapUtil.createEntry("caerium", new ControllerConfig(500000000,500, 550,
                     MapUtil.of(
                             MapUtil.createEntry("energy", new ModifierConfig(0.75f, 1.00f, 1.00f)),
                             MapUtil.createEntry("speed", new ModifierConfig(1.20f, 1.20f, 1.00f)),
                             MapUtil.createEntry("item", new ModifierConfig(1.75f, 1.00f, 2.00f))
                     )
             )),
-            MapUtil.createEntry("amethystine", new Config(750000000,400, 600,
+            MapUtil.createEntry("amethystine", new ControllerConfig(750000000,400, 600,
                     MapUtil.of(
                             MapUtil.createEntry("energy", new ModifierConfig(0.73f, 1.00f, 1.00f)),
                             MapUtil.createEntry("speed", new ModifierConfig(1.22f, 1.22f, 1.00f)),
                             MapUtil.createEntry("item", new ModifierConfig(1.80f, 1.00f, 2.10f))
                     )
             )),
-            MapUtil.createEntry("rosarium", new Config(1000000000,300, 650,
+            MapUtil.createEntry("rosarium", new ControllerConfig(1000000000,300, 650,
                     MapUtil.of(
                             MapUtil.createEntry("energy", new ModifierConfig(0.71f, 1.00f, 1.00f)),
                             MapUtil.createEntry("speed", new ModifierConfig(1.24f, 1.24f, 1.00f)),
                             MapUtil.createEntry("item", new ModifierConfig(1.85f, 1.00f, 2.20f))
                     )
             )),
-            MapUtil.createEntry("ultimate", new Config(2147483647,200, 700,
+            MapUtil.createEntry("ultimate", new ControllerConfig(2147483647,200, 700,
                     MapUtil.of(
                             MapUtil.createEntry("energy", new ModifierConfig(0.65f, 1.00f, 1.00f)),
                             MapUtil.createEntry("speed", new ModifierConfig(1.30f, 1.30f, 1.00f)),
@@ -203,12 +206,12 @@ public class MinerConfigLoader {
         }
     }
 
-    public Config getConfig(String name) {
-        return MINER_CONFIGS.getOrDefault(name, new Config(0,0, 0, Map.of()));
+    public ControllerConfig getControllerConfig(String name) {
+        return MINER_CONFIGS.getOrDefault(name, new ControllerConfig(0,0, 0, Map.of()));
     }
 
     public ModifierConfig getModifierConfig(String name, String type) {
-        return getConfig(name).modifiers.getOrDefault(type, new ModifierConfig(1, 1, 1));
+        return getControllerConfig(name).modifiers.getOrDefault(type, new ModifierConfig(1, 1, 1));
     }
 
     public ModifierConfig getModifierConfig(Block block) {
@@ -220,21 +223,21 @@ public class MinerConfigLoader {
         return getModifierConfig(minerTier, modifierType);
     }
 
-    public record Config(@Expose int energyStorage, @Expose int duration, @Expose int energyConsumptionPerTick, @Expose Map<String, ModifierConfig> modifiers) {
-        public static final StreamCodec<ByteBuf, Config> STREAM_CODEC = StreamCodec.composite(
+    public record ControllerConfig(@Expose int energyStorage, @Expose int duration, @Expose int energyConsumptionPerTick, @Expose Map<String, ModifierConfig> modifiers) {
+        public static final StreamCodec<ByteBuf, ControllerConfig> STREAM_CODEC = StreamCodec.composite(
                 ByteBufCodecs.INT,
-                Config::energyStorage,
+                ControllerConfig::energyStorage,
                 ByteBufCodecs.INT,
-                Config::duration,
+                ControllerConfig::duration,
                 ByteBufCodecs.INT,
-                Config::energyConsumptionPerTick,
+                ControllerConfig::energyConsumptionPerTick,
                 ByteBufCodecs.map(
                         HashMap::new,
                         ByteBufCodecs.STRING_UTF8,
                         ModifierConfig.STREAM_CODEC
                 ),
-                Config::modifiers,
-                Config::new
+                ControllerConfig::modifiers,
+                ControllerConfig::new
         );
     }
 

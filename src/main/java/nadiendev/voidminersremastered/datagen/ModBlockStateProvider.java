@@ -14,6 +14,8 @@ import net.neoforged.neoforge.client.model.generators.ModelFile;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import net.neoforged.neoforge.registries.DeferredHolder;
 
+import java.util.Map;
+
 public class ModBlockStateProvider extends BlockStateProvider {
 
     ExistingFileHelper existingFileHelper;
@@ -90,6 +92,8 @@ public class ModBlockStateProvider extends BlockStateProvider {
             .texture("layer0", layer0)
             .texture("layer1", layer1);
 
+        ModConnectedTexturesProvider.record(block.getId().getPath(), VoidMinersRemastered.MODID + ":block/_template/dual_layer", Map.of("layer0", layer0, "layer1", layer1));
+
         simpleBlockWithItem(block.get(), model);
     }
 
@@ -101,6 +105,8 @@ public class ModBlockStateProvider extends BlockStateProvider {
             .texture("layer0", layer0)
             .texture("layer1", layer1)
             .texture("layer2", layer2);
+
+        ModConnectedTexturesProvider.record(block.getId().getPath(), VoidMinersRemastered.MODID + ":block/_template/triple_layer", Map.of("layer0", layer0, "layer1", layer1, "layer2", layer2));
 
         simpleBlockWithItem(block.get(), model);
     }
@@ -114,6 +120,8 @@ public class ModBlockStateProvider extends BlockStateProvider {
             .texture("layer1", layer1)
             .texture("layer2", layer2)
             .texture("layer3", layer3);
+
+        ModConnectedTexturesProvider.record(block.getId().getPath(), VoidMinersRemastered.MODID + ":block/_template/quad_layer", Map.of("layer0", layer0, "layer1", layer1, "layer2", layer2, "layer3", layer3));
 
         simpleBlockWithItem(block.get(), model);
     }

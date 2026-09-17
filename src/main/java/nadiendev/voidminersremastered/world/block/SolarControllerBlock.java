@@ -1,8 +1,16 @@
 package nadiendev.voidminersremastered.world.block;
 
-import nadiendev.voidminersremastered.util.CustomColorUtil;
+import net.minecraft.ChatFormatting;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.ItemInteractionResult;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.TooltipFlag;
+import nadiendev.voidminersremastered.config.SolarConfigLoader;
+import nadiendev.voidminersremastered.init.ModItems;
+import nadiendev.voidminersremastered.util.ColorUtil;
 import nadiendev.voidminersremastered.world.block.entity.SolarControllerBE;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionResult;
@@ -19,11 +27,13 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
+
 public class SolarControllerBlock extends ColoredBlock implements EntityBlock {
     final ResourceLocation structure;
     final String name;
 
-    public SolarControllerBlock(Properties pProperties, ResourceLocation structure, String name, CustomColorUtil color) {
+    public SolarControllerBlock(Properties pProperties, ResourceLocation structure, String name, ColorUtil color) {
         super(pProperties, color);
         this.structure = structure;
         this.name = name;
@@ -46,6 +56,12 @@ public class SolarControllerBlock extends ColoredBlock implements EntityBlock {
         if (pPlayer.isCrouching()) {
             if (blockEntity != null && !blockEntity.foundStructure) {
                 blockEntity.updateShowStructure();
+            } else if (blockEntity != null) {
+                Direction side = blockEntity.toggleExportSide(pHit.getDirection());
+                pPlayer.displayClientMessage(side == null
+                        ? Component.translatable("client_message.voidminers.export.all_sides")
+                        : Component.translatable("client_message.voidminers.export.enabled",
+                                Component.translatable("tooltip.voidminers.controller.export.side." + side.getName())), true);
             }
             return InteractionResult.CONSUME;
         }
@@ -85,5 +101,40 @@ public class SolarControllerBlock extends ColoredBlock implements EntityBlock {
                 controllerBE.tick(pLevel, blockPos, blockState, structure, name);
             }
         });
+    }
+
+    @Override
+    public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+        SolarConfigLoader.ControllerConfig config = SolarConfigLoader.getInstance().getControllerConfig(name);
+
+        tooltipComponents.add(Component.literal(String.format("Generation Per Tick: %s", formatEnergy(config.energyGenerationPerTick()))).withStyle(ChatFormatting.YELLOW));
+        tooltipComponents.add(Component.literal(String.format("Energy Capacity: %s", formatEnergy(config.energyStorage()))).withStyle(ChatFormatting.GOLD));
+
+        super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
+    }
+
+    private static String formatEnergy(long value) {
+        if (value < 1000) {
+            return value + " FE";
+        }
+
+        String[] units = {"FE", "KFE", "MFE", "GFE", "TFE", "PFE", "EFE"};
+        double scaled = value;
+        int unitIndex = 0;
+
+        while (scaled >= 1000.0 && unitIndex < units.length - 1) {
+            scaled /= 1000.0;
+            unitIndex++;
+        }
+
+        double rounded = Math.round(scaled * 100.0) / 100.0;
+        if (rounded >= 1000.0 && unitIndex < units.length - 1) {
+            scaled = rounded / 1000.0;
+            unitIndex++;
+        } else {
+            scaled = rounded;
+        }
+
+        return String.format("%.2f %s", scaled, units[unitIndex]);
     }
 }

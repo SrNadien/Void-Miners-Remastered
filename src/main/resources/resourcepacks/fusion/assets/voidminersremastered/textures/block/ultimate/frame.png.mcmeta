@@ -1,0 +1,22 @@
+{
+  "animation": {
+    "frametime": 40,
+    "frames": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ]
+  },
+  "fusion": {
+    "type": "connecting",
+    "layout": "pieced",
+    "connections": {
+      "type": "fusion:is_same_block"
+    }
+  }
+}

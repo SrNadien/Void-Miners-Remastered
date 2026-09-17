@@ -44,56 +44,56 @@ public class SolarConfigLoader {
     }
 
     @Expose
-    public Map<String, Config> SOLAR_CONFIGS = MapUtil.of(
-            MapUtil.createEntry("rubetine", new Config(5000000, 20,
+    public Map<String, ControllerConfig> SOLAR_CONFIGS = MapUtil.of(
+            MapUtil.createEntry("rubetine", new ControllerConfig(5000000, 20,
                     MapUtil.of(
                             MapUtil.createEntry("efficiency", new ModifierConfig(1.15f, 1.0f)),
                             MapUtil.createEntry("weather_resistance", new ModifierConfig(1.0f, 1.15f))
                     )
             )),
-            MapUtil.createEntry("aurantium", new Config(10000000, 40,
+            MapUtil.createEntry("aurantium", new ControllerConfig(10000000, 40,
                     MapUtil.of(
                             MapUtil.createEntry("efficiency", new ModifierConfig(1.17f, 1.0f)),
                             MapUtil.createEntry("weather_resistance", new ModifierConfig(1.0f, 1.17f))
                     )
             )),
-            MapUtil.createEntry("citrinetine", new Config(20000000, 80,
+            MapUtil.createEntry("citrinetine", new ControllerConfig(20000000, 80,
                     MapUtil.of(
                             MapUtil.createEntry("efficiency", new ModifierConfig(1.19f, 1.0f)),
                             MapUtil.createEntry("weather_resistance", new ModifierConfig(1.0f, 1.19f))
                     )
             )),
-            MapUtil.createEntry("verdium", new Config(40000000, 160,
+            MapUtil.createEntry("verdium", new ControllerConfig(40000000, 160,
                     MapUtil.of(
                             MapUtil.createEntry("efficiency", new ModifierConfig(1.21f, 1.0f)),
                             MapUtil.createEntry("weather_resistance", new ModifierConfig(1.0f, 1.21f))
                     )
             )),
-            MapUtil.createEntry("azurine", new Config(80000000, 320,
+            MapUtil.createEntry("azurine", new ControllerConfig(80000000, 320,
                     MapUtil.of(
                             MapUtil.createEntry("efficiency", new ModifierConfig(1.23f, 1.0f)),
                             MapUtil.createEntry("weather_resistance", new ModifierConfig(1.0f, 1.23f))
                     )
             )),
-            MapUtil.createEntry("caerium", new Config(160000000, 640,
+            MapUtil.createEntry("caerium", new ControllerConfig(160000000, 640,
                     MapUtil.of(
                             MapUtil.createEntry("efficiency", new ModifierConfig(1.25f, 1.0f)),
                             MapUtil.createEntry("weather_resistance", new ModifierConfig(1.0f, 1.25f))
                     )
             )),
-            MapUtil.createEntry("amethystine", new Config(320000000, 1280,
+            MapUtil.createEntry("amethystine", new ControllerConfig(320000000, 1280,
                     MapUtil.of(
                             MapUtil.createEntry("efficiency", new ModifierConfig(1.27f, 1.0f)),
                             MapUtil.createEntry("weather_resistance", new ModifierConfig(1.0f, 1.27f))
                     )
             )),
-            MapUtil.createEntry("rosarium", new Config(640000000, 2560,
+            MapUtil.createEntry("rosarium", new ControllerConfig(640000000, 2560,
                     MapUtil.of(
                             MapUtil.createEntry("efficiency", new ModifierConfig(1.29f, 1.0f)),
                             MapUtil.createEntry("weather_resistance", new ModifierConfig(1.0f, 1.29f))
                     )
             )),
-            MapUtil.createEntry("ultimate", new Config(2147483647, 5120,
+            MapUtil.createEntry("ultimate", new ControllerConfig(2147483647, 5120,
                     MapUtil.of(
                             MapUtil.createEntry("efficiency", new ModifierConfig(1.35f, 1.0f)),
                             MapUtil.createEntry("weather_resistance", new ModifierConfig(1.0f, 1.35f))
@@ -189,8 +189,8 @@ public class SolarConfigLoader {
         }
     }
 
-    public Config getConfig(String name) {
-        return SOLAR_CONFIGS.getOrDefault(name, new Config(0, 0, Map.of()));
+    public ControllerConfig getControllerConfig(String name) {
+        return SOLAR_CONFIGS.getOrDefault(name, new ControllerConfig(0, 0, Map.of()));
     }
 
     public ModifierConfig getModifierConfig(String modifierTierName, String type) {
@@ -198,7 +198,7 @@ public class SolarConfigLoader {
 
         if(type.equals("weather")) type = "weather_resistance";
 
-        return getConfig(modifierTierName).modifiers.getOrDefault(type, new ModifierConfig(100, 1));
+        return getControllerConfig(modifierTierName).modifiers.getOrDefault(type, new ModifierConfig(100, 1));
     }
 
     public ModifierConfig getModifierConfig(Block block) {
@@ -218,19 +218,19 @@ public class SolarConfigLoader {
         return getModifierConfig(modifierTierName, modifierType);
     }
 
-    public record Config(@Expose long energyStorage, @Expose long energyGenerationPerTick, @Expose Map<String, ModifierConfig> modifiers) {
-        public static final StreamCodec<ByteBuf, Config> STREAM_CODEC = StreamCodec.composite(
+    public record ControllerConfig(@Expose long energyStorage, @Expose long energyGenerationPerTick, @Expose Map<String, ModifierConfig> modifiers) {
+        public static final StreamCodec<ByteBuf, ControllerConfig> STREAM_CODEC = StreamCodec.composite(
             ByteBufCodecs.VAR_LONG,
-            Config::energyStorage,
+            ControllerConfig::energyStorage,
             ByteBufCodecs.VAR_LONG,
-            Config::energyGenerationPerTick,
+            ControllerConfig::energyGenerationPerTick,
             ByteBufCodecs.map(
                 HashMap::new,
                 ByteBufCodecs.STRING_UTF8,
                 ModifierConfig.STREAM_CODEC
             ),
-            Config::modifiers,
-            Config::new
+            ControllerConfig::modifiers,
+            ControllerConfig::new
         );
     }
 

@@ -1,0 +1,13 @@
+{
+  "type": "voidminersremastered:miner",
+  "allowHigherTiers": false,
+  "dimension": "minecraft:overworld",
+  "minTier": 2,
+  "output": {
+    "stack": {
+      "count": 9,
+      "id": "voidminersremastered:aurantium"
+    },
+    "weight": 16.0
+  }
+}

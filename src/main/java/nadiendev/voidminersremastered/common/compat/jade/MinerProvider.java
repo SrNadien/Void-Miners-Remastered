@@ -59,6 +59,7 @@ public enum MinerProvider implements IBlockComponentProvider, IServerDataProvide
                     case STRUCTURE_NOT_FOUND -> reason = Component.translatable("jade.voidminers.halt_reason.structure_not_found");
                     case TOO_MUCH_ITEM_MULTIPLIER -> reason = Component.translatable("jade.voidminers.halt_reason.too_much_item_multiplier");
                     case NOT_ENOUGH_EMPTY_SLOTS -> reason = Component.translatable("jade.voidminers.halt_reason.not_enough_empty_slots");
+                    case BLOCK_BEFORE_GLASS -> reason = Component.translatable("jade.voidminers.halt_reason.block_before_glass");
                     case NO_BEDROCK_OR_VOID_VIEW -> reason = Component.translatable("jade.voidminers.halt_reason.no_bedrock_or_void_view");
                     case NOT_ENOUGH_POWER -> reason = Component.translatable("jade.voidminers.halt_reason.not_enough_power");
                     default -> reason = Component.translatable("jade.voidminers.halt_reason.halt_reason_not_found");
@@ -87,11 +88,9 @@ public enum MinerProvider implements IBlockComponentProvider, IServerDataProvide
             return;
         }
 
-        if (miner.getStructure() != null) {
-            Integer tier = MiscUtil.tierMap.get(miner.getStructure().getPath());
-            if (tier != null) {
-                tag.putInt("Tier", tier);
-            }
+        Integer tier = miner.getStructure() == null ? null : MiscUtil.TIER_MAP.get(miner.getStructure().getPath());
+        if (tier != null) {
+            tag.putInt("Tier", tier);
         }
 
         tag.putInt("Energy", miner.getEnergyStorage().getEnergyStored());

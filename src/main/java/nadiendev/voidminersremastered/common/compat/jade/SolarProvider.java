@@ -65,11 +65,9 @@ public enum SolarProvider implements IBlockComponentProvider, IServerDataProvide
             return;
         }
 
-        if (solar.getStructure() != null) {
-            Integer tier = MiscUtil.tierMap.get(solar.getStructure().getPath());
-            if (tier != null) {
-                tag.putInt("Tier", tier);
-            }
+        Integer tier = solar.getStructure() == null ? null : MiscUtil.TIER_MAP.get(solar.getStructure().getPath());
+        if (tier != null) {
+            tag.putInt("Tier", tier);
         }
 
         tag.putLong("Energy", solar.getEnergyStorage().getLongEnergyStored());

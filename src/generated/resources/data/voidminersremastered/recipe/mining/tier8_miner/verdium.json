@@ -1,0 +1,19 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "allthemodium"
+    }
+  ],
+  "type": "voidminersremastered:miner",
+  "allowHigherTiers": false,
+  "dimension": "allthemodium:mining",
+  "minTier": 8,
+  "output": {
+    "stack": {
+      "count": 55,
+      "id": "voidminersremastered:verdium"
+    },
+    "weight": 16.0
+  }
+}

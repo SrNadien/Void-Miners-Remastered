@@ -22,19 +22,19 @@ public class ModBusEvent {
     public static void registerCapabilities(RegisterCapabilitiesEvent event) {
         event.registerBlockEntity(
             Capabilities.EnergyStorage.BLOCK,
-            ModBlockEntities.MINER_CONTROLLER_BASE_BE.get(),
+            ModBlockEntities.MINER_CONTROLLER_BE.get(),
             ((o, direction) -> o.getEnergyStorage())
         );
 
         event.registerBlockEntity(
             Capabilities.ItemHandler.BLOCK,
-            ModBlockEntities.MINER_CONTROLLER_BASE_BE.get(),
+            ModBlockEntities.MINER_CONTROLLER_BE.get(),
             (be, side) -> be.getItemHandler()
         );
 
         event.registerBlockEntity(
                 Capabilities.EnergyStorage.BLOCK,
-                ModBlockEntities.SOLAR_BASE_BE.get(),
+                ModBlockEntities.SOLAR_CONTROLLER_BE.get(),
                 ((o, direction) -> o.getEnergyStorage())
         );
     }

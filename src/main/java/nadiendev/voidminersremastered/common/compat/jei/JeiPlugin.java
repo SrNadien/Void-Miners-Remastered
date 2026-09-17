@@ -70,20 +70,22 @@ public class JeiPlugin implements IModPlugin {
         weight = weight.reversed();
 
         List<MinerRecipe> foundRecipes = recipes.stream().filter(
-            recipe -> {
-                if(recipe.allowHigherTiers()){
-                    return recipe.minTier() <= tier + 1;
-                } else {
-                    return recipe.minTier() == tier + 1;
-                }
-            }
-        ).sorted(
-            alphabetical.thenComparing(weight))
-            .toList();
+                        recipe -> {
+                            if (recipe.allowHigherTiers()){
+                                return recipe.minTier() <= tier + 1;
+                            } else {
+                                return recipe.minTier() == tier + 1;
+                            }
+                        }
+                ).sorted(
+                        alphabetical.thenComparing(weight))
+                .toList();
+
+        tiers.get(tier).updateWeights(foundRecipes);
 
         registration.addRecipes(
-            tiers.get(tier).getRecipeType(),
-            foundRecipes
+                tiers.get(tier).getRecipeType(),
+                foundRecipes
         );
     }
 

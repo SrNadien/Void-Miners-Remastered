@@ -22,11 +22,14 @@ public class DataGenerators {
 
         generator.addProvider(event.includeClient(), new ModBlockStateProvider(packOutput, existingFileHelper));
         generator.addProvider(event.includeClient(), new ModItemModelProvider(packOutput, existingFileHelper));
+        generator.addProvider(event.includeClient(), new ModConnectedTexturesProvider(packOutput));
         generator.addProvider(event.includeServer(), new ModRecipeProvider(packOutput, provider));
+        generator.addProvider(event.includeServer(), new ModCompatRecipeProvider(packOutput));
 
         generator.addProvider(event.includeServer(), ModLootTableProvider.create(packOutput, provider));
 
-        generator.addProvider(event.includeServer(), new ModBlockTagGenerator(packOutput, provider, existingFileHelper));
+        ModBlockTagGenerator blockTags = generator.addProvider(event.includeServer(), new ModBlockTagGenerator(packOutput, provider, existingFileHelper));
+        generator.addProvider(event.includeServer(), new ModItemTagGenerator(packOutput, provider, blockTags, existingFileHelper));
 
         generator.addProvider(event.includeClient(), new ModLanguageProvider(packOutput, "en_us"));
         generator.addProvider(event.includeClient(), new ModLanguageProvider.EsEs(packOutput, "es_es"));

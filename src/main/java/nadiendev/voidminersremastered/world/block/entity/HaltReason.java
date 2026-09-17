@@ -5,6 +5,7 @@ public enum HaltReason {
     NO_RECIPES_IN_DIMENSION("no recipes in this dimension"),
     TOO_MUCH_ITEM_MULTIPLIER("too much item multiplier"),
     NOT_ENOUGH_EMPTY_SLOTS("not enough empty slots in inventory"),
+    BLOCK_BEFORE_GLASS("block before glass"),
     NO_BEDROCK_OR_VOID_VIEW("no bedrock or void view"),
     NOT_ENOUGH_POWER("insufficient stored energy"),
 

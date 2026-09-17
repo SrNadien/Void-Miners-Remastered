@@ -10,8 +10,9 @@ import java.util.List;
 import java.util.Map;
 
 public class MiscUtil {
-    public static Map<String, Integer> tierMap = new HashMap<>();
-    public static Map<String, Integer> colorMap = new HashMap<>();
+    public static final Map<String, Integer> TIER_MAP = new HashMap<>();
+
+    public static final Map<String, Integer> GLASS_HEIGHT = new HashMap<>();
 
     public static Map<String, List<List<List<BlockState>>>> structureMap = new HashMap<>();
 
@@ -19,23 +20,19 @@ public class MiscUtil {
         for (int i = 0; i < CrystalSet.sets().size(); i++) {
             CrystalSet set = CrystalSet.sets().get(i);
 
-            tierMap.put(
-                    "miner_" + set.name,
-                    i + 1
-            );
+            TIER_MAP.put("miner_" + set.name, i + 1);
         }
 
-        colorMap.put("rubetine", 0xFFFF0000);
-        colorMap.put("aurantium", 0xFFFFAA00);
-        colorMap.put("citrinetine", 0xFFFFFF00);
-        colorMap.put("verdium", 0xFF00FF00);
-        colorMap.put("azurine", 0xFF00FFFF);
-        colorMap.put("caerium", 0xFF0000FF);
-        colorMap.put("amethystine", 0xFFAA00FF);
-        colorMap.put("rosarium", 0xFFFF00FF);
-        colorMap.put("ultimate", 0xFFD700FF);
+        GLASS_HEIGHT.put("miner_rubetine", 2);
+        GLASS_HEIGHT.put("miner_aurantium", 3);
+        GLASS_HEIGHT.put("miner_citrinetine", 4);
+        GLASS_HEIGHT.put("miner_verdium", 4);
+        GLASS_HEIGHT.put("miner_azurine", 4);
+        GLASS_HEIGHT.put("miner_caerium", 5);
+        GLASS_HEIGHT.put("miner_amethystine", 5);
+        GLASS_HEIGHT.put("miner_rosarium", 6);
+        GLASS_HEIGHT.put("miner_ultimate", 6);
     }
-
 
     public static Map<String, Integer> getNeededBlocks(List<List<List<BlockState>>> structure) {
         Map<String, Integer> blocks = new HashMap<>();

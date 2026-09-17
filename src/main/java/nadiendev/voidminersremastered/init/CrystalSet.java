@@ -3,7 +3,7 @@ package nadiendev.voidminersremastered.init;
 import nadiendev.voidminersremastered.VoidMinersRemastered;
 import nadiendev.voidminersremastered.world.block.*;
 import nadiendev.voidminersremastered.world.block.MinerControllerBlock;
-import nadiendev.voidminersremastered.util.CustomColorUtil;
+import nadiendev.voidminersremastered.util.ColorUtil;
 import nadiendev.voidminersremastered.world.item.ColoredItem;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
@@ -34,12 +34,12 @@ public class CrystalSet {
     public final DeferredHolder<Block, ? extends Block> SPEED_MOD;
     public final DeferredHolder<Block, ? extends Block> ENERGY_MOD;
     public final DeferredHolder<Block, ? extends Block> ITEM_MOD;
-    public final CustomColorUtil color;
+    public final ColorUtil color;
 
     CrystalSet(String name, DeferredHolder<Item, Item> crystal, DeferredHolder<Block, Block> crystalBlock,
                DeferredHolder<Block, ? extends Block> minerController, DeferredHolder<Block, Block> frame,
                DeferredHolder<Block, ? extends Block> energyMod, DeferredHolder<Block, ? extends Block> speedMod,
-               DeferredHolder<Block, ? extends Block> itemMod, CustomColorUtil color) {
+               DeferredHolder<Block, ? extends Block> itemMod, ColorUtil color) {
         this.name = name;
         CRYSTAL = crystal;
         CRYSTAL_BLOCK = crystalBlock;
@@ -51,13 +51,13 @@ public class CrystalSet {
         this.color = color;
     }
 
-    public static DeferredHolder<Item, Item> fastCreateItem(String name, Rarity rarity, CustomColorUtil color) {
+    public static DeferredHolder<Item, Item> fastCreateItem(String name, Rarity rarity, ColorUtil color) {
         return ModItems.ITEMS.register(name, () -> new ColoredItem(
                 new Item.Properties().rarity(rarity), color
         ));
     }
 
-    public static DeferredHolder<Block, Block> fastCreateBlock(String name, float hardness, float resistance, Rarity rarity, CustomColorUtil color) {
+    public static DeferredHolder<Block, Block> fastCreateBlock(String name, float hardness, float resistance, Rarity rarity, ColorUtil color) {
         return ModBlocks.registerColoredBlock(name,
                 () -> new ColoredBlock(
                         BlockBehaviour.Properties.of()
@@ -70,7 +70,7 @@ public class CrystalSet {
         );
     }
 
-    public static DeferredHolder<Block, ModifierBlock> fastCreateModifier(String name, float hardness, float resistance, Rarity rarity, ModifierType type, CustomColorUtil color) {
+    public static DeferredHolder<Block, ModifierBlock> fastCreateModifier(String name, float hardness, float resistance, Rarity rarity, ModifierType type, ColorUtil color) {
         return ModBlocks.registerColoredBlock(name + "_" + type.type + "_modifier",
                 () -> new ModifierBlock(
                         BlockBehaviour.Properties.of()
@@ -85,7 +85,7 @@ public class CrystalSet {
         );
     }
 
-    public static DeferredHolder<Block, MinerControllerBlock> fastCreateController(String name, float hardness, float resistance, Rarity rarity, ResourceLocation structure, CustomColorUtil color) {
+    public static DeferredHolder<Block, MinerControllerBlock> fastCreateController(String name, float hardness, float resistance, Rarity rarity, ResourceLocation structure, ColorUtil color) {
         return ModBlocks.registerColoredBlock(name + "_miner",
                 () -> new MinerControllerBlock(
                         BlockBehaviour.Properties.of()
@@ -102,18 +102,18 @@ public class CrystalSet {
     }
 
     public static void initSets() {
-        RUBETINE = createSet("rubetine", ModRarities.RUBETINE, ModRarities.RUBETINE_COLOR);
-        AURANTIUM = createSet("aurantium", ModRarities.AURANTIUM, ModRarities.AURANTIUM_COLOR);
-        CITRINETINE = createSet("citrinetine", ModRarities.CITRINETINE, ModRarities.CITRINETINE_COLOR);
-        VERDIUM = createSet("verdium", ModRarities.VERDIUM, ModRarities.VERDIUM_COLOR);
-        AZURINE = createSet("azurine", ModRarities.AZURINE, ModRarities.AZURINE_COLOR);
-        CAERIUM = createSet("caerium", ModRarities.CAERIUM, ModRarities.CAERIUM_COLOR);
-        AMETHYSTINE = createSet("amethystine", ModRarities.AMETHYSTINE, ModRarities.AMETHYSTINE_COLOR);
-        ROSARIUM = createSet("rosarium", ModRarities.ROSARIUM, ModRarities.ROSARIUM_COLOR);
-        ULTIMATE = createSet("ultimate", ModRarities.ULTIMATE, ModRarities.ULTIMATE_COLOR);
+        RUBETINE = createSet("rubetine", ModRarities.RUBETINE, ColorUtil.RUBETINE_COLOR);
+        AURANTIUM = createSet("aurantium", ModRarities.AURANTIUM, ColorUtil.AURANTIUM_COLOR);
+        CITRINETINE = createSet("citrinetine", ModRarities.CITRINETINE, ColorUtil.CITRINETINE_COLOR);
+        VERDIUM = createSet("verdium", ModRarities.VERDIUM, ColorUtil.VERDIUM_COLOR);
+        AZURINE = createSet("azurine", ModRarities.AZURINE, ColorUtil.AZURINE_COLOR);
+        CAERIUM = createSet("caerium", ModRarities.CAERIUM, ColorUtil.CAERIUM_COLOR);
+        AMETHYSTINE = createSet("amethystine", ModRarities.AMETHYSTINE, ColorUtil.AMETHYSTINE_COLOR);
+        ROSARIUM = createSet("rosarium", ModRarities.ROSARIUM, ColorUtil.ROSARIUM_COLOR);
+        ULTIMATE = createSet("ultimate", ModRarities.ULTIMATE, ColorUtil.ULTIMATE_COLOR);
     }
 
-    public static CrystalSet createSet(String name, Rarity rarity, CustomColorUtil color) {
+    public static CrystalSet createSet(String name, Rarity rarity, ColorUtil color) {
         return new CrystalSet(
                 name,
                 name.equals("ultimate") ? null : fastCreateItem(name, rarity, color),

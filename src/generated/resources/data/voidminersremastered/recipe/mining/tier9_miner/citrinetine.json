@@ -1,0 +1,19 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "allthemodium"
+    }
+  ],
+  "type": "voidminersremastered:miner",
+  "allowHigherTiers": false,
+  "dimension": "allthemodium:mining",
+  "minTier": 9,
+  "output": {
+    "stack": {
+      "count": 64,
+      "id": "voidminersremastered:citrinetine"
+    },
+    "weight": 16.0
+  }
+}
