@@ -1,4 +1,4 @@
-# Void Miners Remastered 2.1.0 — Minecraft 1.21.1
+# Void Miners Remastered 2.0.1 — Minecraft 1.21.1
 
 ## Added
 
