@@ -1,4 +1,4 @@
-# Void Miners Remastered 3.1.0 — Minecraft 26.1.2
+# Void Miners Remastered 3.0.1 — Minecraft 26.1.2
 
 ## Added
 
