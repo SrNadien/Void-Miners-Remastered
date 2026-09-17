@@ -1,0 +1,12 @@
+{
+  "type": "voidminersremastered:miner",
+  "dimension": "minecraft:overworld",
+  "minTier": 1,
+  "output": {
+    "stack": {
+      "count": 1,
+      "id": "minecraft:deepslate_coal_ore"
+    },
+    "weight": 8.0
+  }
+}

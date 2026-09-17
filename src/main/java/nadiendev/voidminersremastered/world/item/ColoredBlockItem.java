@@ -1,7 +1,9 @@
 package nadiendev.voidminersremastered.world.item;
 
 import nadiendev.voidminersremastered.util.CustomColorUtil;
+import nadiendev.voidminersremastered.world.block.MinerControllerBlock;
 import nadiendev.voidminersremastered.world.block.ModifierBlock;
+import nadiendev.voidminersremastered.world.block.SolarControllerBlock;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.world.item.BlockItem;
@@ -27,6 +29,10 @@ public class ColoredBlockItem extends BlockItem {
                                 Consumer<Component> tooltipAdder, TooltipFlag tooltipFlag) {
         if (getBlock() instanceof ModifierBlock modifierBlock) {
             modifierBlock.appendModifierTooltip(tooltipAdder);
+        } else if (getBlock() instanceof MinerControllerBlock minerControllerBlock) {
+            minerControllerBlock.appendControllerTooltip(tooltipAdder);
+        } else if (getBlock() instanceof SolarControllerBlock solarControllerBlock) {
+            solarControllerBlock.appendControllerTooltip(tooltipAdder);
         }
 
         super.appendHoverText(stack, context, display, tooltipAdder, tooltipFlag);

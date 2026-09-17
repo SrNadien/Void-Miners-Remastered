@@ -1,3 +1,34 @@
+# Void Miners Remastered 3.1.0 — Minecraft 26.1.2
+
+## Added
+
+- **Ores from other mods in the miners**, loaded only when the mod is installed (`neoforge:mod_loaded`):
+  AllTheModium, AllTheOres, Oritech, Bigger Reactors, Energized Power, Modern Foundry,
+  Mystical Agriculture / Agradditions, Occultism, Powah, UltimateFoods and XyCraft World.
+  Each ore is available in the dimension where it generates.
+- **Deepslate ores** (vanilla and modded) in the Overworld.
+- **AllTheModium Mining dimension support**: every ore and every Void Miners gem can be mined there.
+- **Gem output per miner tier**: 8 / 9 / 12 / 15 / 19 / 34 / 40 / 55 / 64 per operation depending on the tier.
+- **Configurable output side**: sneak + right-click a face of a formed Miner Controller to push items
+  into that inventory; same on the Solar Controller for energy.
+- **Fusion connected textures** (optional).
+- Recipes can require a block under the Miner Controller (`blockUnderneath`), also from KubeJS.
+- Miners stop when a block sits between the controller and the glass panels; the laser stops at the block it hits.
+- JEI: SHIFT for percentages, CTRL for full values, block requirement slot.
+- `c:gems/*` and `c:storage_blocks/*` tags; controller item tooltips.
+- Structures are also accepted rotated 90°.
+
+## Changed
+
+- Gems appear more often; better performance with tick acceleration; decimal item multipliers.
+- Glass Panel is breakable by hand.
+
+## Fixed
+
+- Max Storage Upgrade T2 and T3 recipes required themselves.
+
+---
+
 # Void Miners Remastered 3.0.0 — Minecraft 26.1.2
 
 Full port to Minecraft **26.1.2** / NeoForge. This is a large internal rewrite: Mojang renamed and

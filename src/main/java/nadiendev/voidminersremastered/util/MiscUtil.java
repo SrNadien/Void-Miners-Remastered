@@ -13,6 +13,8 @@ public class MiscUtil {
     public static Map<String, Integer> tierMap = new HashMap<>();
     public static Map<String, Integer> colorMap = new HashMap<>();
 
+    public static final Map<String, Integer> GLASS_HEIGHT = new HashMap<>();
+
     public static Map<String, List<List<List<BlockState>>>> structureMap = new HashMap<>();
 
     static {
@@ -24,6 +26,16 @@ public class MiscUtil {
                     i + 1
             );
         }
+
+        GLASS_HEIGHT.put("miner_rubetine", 2);
+        GLASS_HEIGHT.put("miner_aurantium", 3);
+        GLASS_HEIGHT.put("miner_citrinetine", 4);
+        GLASS_HEIGHT.put("miner_verdium", 4);
+        GLASS_HEIGHT.put("miner_azurine", 4);
+        GLASS_HEIGHT.put("miner_caerium", 5);
+        GLASS_HEIGHT.put("miner_amethystine", 5);
+        GLASS_HEIGHT.put("miner_rosarium", 6);
+        GLASS_HEIGHT.put("miner_ultimate", 6);
 
         colorMap.put("rubetine", 0xFFFF0000);
         colorMap.put("aurantium", 0xFFFFAA00);

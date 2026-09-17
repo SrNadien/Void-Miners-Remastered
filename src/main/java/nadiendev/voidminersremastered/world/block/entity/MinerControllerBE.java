@@ -7,10 +7,12 @@ import nadiendev.voidminersremastered.init.ModRarities;
 import nadiendev.voidminersremastered.world.block.ModifierBlock;
 import nadiendev.voidminersremastered.common.energy.MinerEnergyStorage;
 import nadiendev.voidminersremastered.init.ModBlockEntities;
+import nadiendev.voidminersremastered.server.recipe.BlockRequirement;
 import nadiendev.voidminersremastered.server.recipe.MinerRecipe;
 import nadiendev.voidminersremastered.server.recipe.WeightedStack;
 import nadiendev.voidminersremastered.util.ListUtil;
 import nadiendev.voidminersremastered.util.MiscUtil;
+import nadiendev.voidminersremastered.world.multiblock.MinerMultiblocks;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -48,15 +50,16 @@ import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.neoforged.neoforge.transfer.item.ItemStacksResourceHandler;
 import net.neoforged.neoforge.transfer.item.ItemUtil;
 import org.jetbrains.annotations.Nullable;
-import nadiendev.mangomultiblock.core.manager.MultiBlockManager;
 import nadiendev.mangomultiblock.core.manager.RegisteredMultiBlockPattern;
 import nadiendev.mangomultiblock.core.misc.MultiblockMatchResult;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 public class MinerControllerBE extends BlockEntity {
 
@@ -78,6 +81,7 @@ public class MinerControllerBE extends BlockEntity {
     private String name;
 
     public boolean canSeeBedrockOrVoid = false;
+    public boolean blockBeforeGlass = false;
     public boolean enoughPower = false;
 
     public boolean enoughPowerForNextOperation = false;
@@ -87,6 +91,23 @@ public class MinerControllerBE extends BlockEntity {
     private boolean dimensionOK = false;
 
     private int checkStructureTTL = 0;
+    private int bedrockCheckTTL = 0;
+    private int blockBeforeGlassTTL = 0;
+    private int recipeCheckTTL = 0;
+
+    private int tickAcceleratedTicks = 1;
+
+    private float cachedEnergyMod = 1f;
+    private float cachedSpeedMod = 1f;
+    private float cachedItemMod = 1f;
+
+    @Nullable
+    private BlockState blockUnderneathState = null;
+    public int beamLength = 0;
+
+    @Nullable
+    private Direction exportSide = null;
+    private int exportCooldown = 0;
 
     /**
      * Output inventory of the miner.
@@ -277,6 +298,13 @@ public class MinerControllerBE extends BlockEntity {
 
                 addMinerInfo(tooltip);
                 break;
+            case BLOCK_BEFORE_GLASS:
+                status.append(Component.translatable("tooltip.voidminersremastered.controller.status.mining_stopped").withStyle(ChatFormatting.RED));
+                tooltip.add(status);
+                tooltip.add(Component.translatable("tooltip.voidminersremastered.controller.halt_reason.block_before_glass").withStyle(ChatFormatting.YELLOW));
+
+                addMinerInfo(tooltip);
+                break;
             case NO_BEDROCK_OR_VOID_VIEW:
                 status.append(Component.translatable("tooltip.voidminersremastered.controller.status.mining_stopped").withStyle(ChatFormatting.RED));
                 tooltip.add(status);
@@ -313,7 +341,7 @@ public class MinerControllerBE extends BlockEntity {
         if (getItemModifierMultiplier() != 1.0f) {
             tooltip.add(Component.translatable("tooltip.voidminersremastered.controller.item_boost")
                     .append(Component.literal(String.format(
-                            "§f%d×", (int) getItemModifierMultiplier()))));
+                            "§f%.2f×", getItemModifierMultiplier()))));
         }
 
         float progressPercent = getMaxProgress() == 0 ? 0F : (float) getProgress() / getMaxProgress();
@@ -322,6 +350,16 @@ public class MinerControllerBE extends BlockEntity {
                         "§r%s §f%.2f%%", getProgressBar(progressPercent), progressPercent * 100))));
 
         tooltip.add(getUpgradeInfoText());
+
+        tooltip.add(Component.translatable("tooltip.voidminersremastered.controller.export").withStyle(ChatFormatting.AQUA)
+                .append(exportSide == null
+                        ? Component.translatable("tooltip.voidminersremastered.controller.export.none").withStyle(ChatFormatting.WHITE)
+                        : Component.translatable("tooltip.voidminersremastered.controller.export.side." + exportSide.getName()).withStyle(ChatFormatting.WHITE)));
+
+        if (MinerConfigLoader.getInstance().MINERS_AUTO_EXPORT_INSTEAD_OF_FILLING_THEIR_OWN_INVENTORY) {
+            tooltip.add(Component.translatable("tooltip.voidminersremastered.controller.information").withStyle(ChatFormatting.GOLD)
+                    .append(Component.translatable("tooltip.voidminersremastered.controller.information.auto_export")));
+        }
     }
 
     private String getEnergyBar(int current, int max) {
@@ -358,14 +396,15 @@ public class MinerControllerBE extends BlockEntity {
     }
 
     private Component getUpgradeInfoText() {
-        if(this.upgradeItem == Items.AIR) {
-            return Component.literal("⚙ UPGRADE: ").withStyle(ChatFormatting.AQUA)
-                    .append(Component.literal("No upgrades applied.").withStyle(ChatFormatting.WHITE));
+        MutableComponent base = Component.translatable("tooltip.voidminersremastered.controller.upgrade").withStyle(ChatFormatting.AQUA);
+
+        if (this.upgradeItem == Items.AIR) {
+            return base.append(Component.translatable("tooltip.voidminersremastered.controller.upgrade.no_upgrade").withStyle(ChatFormatting.WHITE));
         }
 
-        return Component.literal("⚙ UPGRADE: ").withStyle(ChatFormatting.AQUA)
-                .append(Component.translatable(this.upgradeItem.getDescriptionId()).withStyle(ChatFormatting.WHITE))
-                .append(Component.literal(" (+" + this.upgradeItem.components().get(ModDataComponents.MAX_STORAGE_UPGRADE_SLOTS.get()) + " slots)").withStyle(ChatFormatting.GRAY));
+        return base.append(Component.translatable(this.upgradeItem.getDescriptionId()).withStyle(ChatFormatting.WHITE))
+                .append(Component.translatable("tooltip.voidminersremastered.controller.upgrade.slots",
+                        this.upgradeItem.components().get(ModDataComponents.MAX_STORAGE_UPGRADE_SLOTS.get())).withStyle(ChatFormatting.WHITE));
     }
 
     public void updateShowStructure() {
@@ -389,6 +428,8 @@ public class MinerControllerBE extends BlockEntity {
         data.putBoolean("canSeeBedrockOrVoid", canSeeBedrockOrVoid);
         data.putBoolean("foundStructure", foundStructure);
         data.putBoolean("enoughPower", enoughPower);
+        data.putInt("beamLength", beamLength);
+        if (exportSide != null) data.putString("exportSide", exportSide.getName());
     }
 
     @Override
@@ -422,6 +463,8 @@ public class MinerControllerBE extends BlockEntity {
         this.foundStructure = data.getBooleanOr("foundStructure", this.foundStructure);
         // NOTE: key mismatch preserved from 1.21.1 -- saved as "enoughPower", read back as "enoughRF".
         this.enoughPower = data.getBooleanOr("enoughRF", this.enoughPower);
+        this.beamLength = data.getIntOr("beamLength", this.beamLength);
+        this.exportSide = data.getString("exportSide").map(Direction::byName).orElse(null);
 
         recalculateStorageFromUpgrades();
 
@@ -470,37 +513,59 @@ public class MinerControllerBE extends BlockEntity {
 
         long gameTime = level.getGameTime();
 
-        if (!MinerConfigLoader.getInstance().ALLOW_TICK_ACCELERATION) {
-            if (this.lastProcessedGameTime == gameTime) return;
-            this.lastProcessedGameTime = gameTime;
-        }
-
-        // only check dimension once
-        if(!dimensionOK && haltReason != HaltReason.NO_RECIPES_IN_DIMENSION) {
-            if (allRecipes().isEmpty()) {
-                haltReason = HaltReason.NO_RECIPES_IN_DIMENSION;
-                return;
-            }
-            dimensionOK = true;
-        } else if (haltReason == HaltReason.NO_RECIPES_IN_DIMENSION) {
+        if (!MinerConfigLoader.getInstance().ALLOW_TICK_ACCELERATION && this.lastProcessedGameTime == gameTime) {
             return;
         }
 
-        if(getStructure() == null) {
+        if (getStructure() == null) {
             setup(structure, name);
         }
 
-        if(this.lastProcessedGameTime != gameTime) {
-            if(checkStructureTTL == 0) {
-                checkStructure(level, pPos);
-                checkStructureTTL = 20; // only check structure every 20 ticks even if tick accelerated
-                sync();
+        if (haltReason == HaltReason.NO_RECIPES_IN_DIMENSION) {
+            if (recipeCheckTTL > 0) {
+                recipeCheckTTL--;
+                return;
             }
+            if (allRecipes().isEmpty()) {
+                recipeCheckTTL = 100;
+                return;
+            }
+            dimensionOK = true;
+            haltReason = HaltReason.NONE;
+        } else if (!dimensionOK) {
+            if (allRecipes().isEmpty()) {
+                haltReason = HaltReason.NO_RECIPES_IN_DIMENSION;
+                recipeCheckTTL = 100;
+                return;
+            }
+            dimensionOK = true;
+        }
+
+        if (this.lastProcessedGameTime == gameTime) {
+            tickAcceleratedTicks++;
+            return;
+        }
+
+        if (exportSide != null) {
+            if (exportCooldown <= 0) {
+                exportToSide();
+                exportCooldown = Math.max(1, MinerConfigLoader.getInstance().EXPORT_INTERVAL_TICKS);
+            } else {
+                exportCooldown--;
+            }
+        }
+
+        if (checkStructureTTL <= 0) {
+            checkStructure(level, pPos);
+            sync();
+            checkStructureTTL = 20;
+        } else {
             checkStructureTTL--;
         }
 
         if (!foundStructure) {
             haltReason = HaltReason.STRUCTURE_NOT_FOUND;
+            beforeReturn();
             return;
         }
 
@@ -508,88 +573,170 @@ public class MinerControllerBE extends BlockEntity {
             updateShowStructure();
         }
 
-        canSeeBedrockOrVoid = hasViewOnBedrockOrVoid(pPos);
-        sync();
+        if (blockBeforeGlassTTL <= 0) {
+            blockBeforeGlass = hasBlockBeforeGlass(pPos);
+            blockBeforeGlassTTL = 20;
+        } else {
+            blockBeforeGlassTTL--;
+        }
 
-        if(!canSeeBedrockOrVoid) {
-            haltReason = HaltReason.NO_BEDROCK_OR_VOID_VIEW;
+        if (blockBeforeGlass) {
+            haltReason = HaltReason.BLOCK_BEFORE_GLASS;
+            canSeeBedrockOrVoid = false;
+            beforeReturn();
             return;
         }
 
-        if(!MinerConfigLoader.getInstance().MINERS_AUTO_EXPORT_INSTEAD_OF_FILLING_THEIR_OWN_INVENTORY) {
-            int itemModMultMultiplier = (int) getItemModifierMultiplier();
+        if (bedrockCheckTTL <= 0) {
+            canSeeBedrockOrVoid = hasViewOnBedrockOrVoid(pPos);
+            sync();
+            bedrockCheckTTL = 20;
+        } else {
+            bedrockCheckTTL--;
+        }
+
+        if (!canSeeBedrockOrVoid) {
+            haltReason = HaltReason.NO_BEDROCK_OR_VOID_VIEW;
+            beforeReturn();
+            return;
+        }
+
+        if (!MinerConfigLoader.getInstance().MINERS_AUTO_EXPORT_INSTEAD_OF_FILLING_THEIR_OWN_INVENTORY) {
+            int itemModMultMultiplier = (int) Math.ceil(getItemModifierMultiplier() * getMaxOutputCount());
 
             if (!MinerConfigLoader.getInstance().MINERS_FILL_ALL_SLOTS) {
                 if (itemModMultMultiplier > itemHandler.size() * 64) {
                     haltReason = HaltReason.TOO_MUCH_ITEM_MULTIPLIER;
+                    beforeReturn();
                     return;
                 }
-                if(!hasEnoughEmptySlots(itemModMultMultiplier / 64)) {
+                if (!hasEnoughEmptySlots(itemModMultMultiplier / 64)) {
                     haltReason = HaltReason.NOT_ENOUGH_EMPTY_SLOTS;
+                    beforeReturn();
                     return;
                 }
             }
 
-            if(isItemHandlerFull()) {
+            if (isItemHandlerFull()) {
                 haltReason = HaltReason.NOT_ENOUGH_EMPTY_SLOTS;
+                beforeReturn();
                 return;
             }
         }
 
-        int rfPerTick = getRFPerTick();
+        long rfPerTick = (long) getRFPerTick() * tickAcceleratedTicks;
 
         enoughPower = rfPerTick <= energyHandler.getEnergyStored();
         enoughPowerForNextOperation = rfPerTick * 2 <= energyHandler.getEnergyStored();
-        sync();
 
         if (!enoughPower) {
             haltReason = HaltReason.NOT_ENOUGH_POWER;
+            beforeReturn();
             return;
         }
 
         haltReason = HaltReason.NONE;
-
-        progress++;
-        energyHandler.removeEnergy(rfPerTick);
+        int tickMultiplier = tickAcceleratedTicks <= 2 ? tickAcceleratedTicks : (tickAcceleratedTicks - 1) * 2;
+        progress += tickMultiplier;
+        energyHandler.removeEnergy((int) rfPerTick);
         sync();
 
-        if (progress < getMaxProgress()) {
+        int maxProgress = getMaxProgress();
+
+        if (maxProgress <= 0 || progress < maxProgress) {
+            beforeReturn();
             return;
         }
 
         List<WeightedStack> allOutputs = new ArrayList<>();
-
         for (MinerRecipe recipe : allRecipes()) {
             allOutputs.add(recipe.output().copy());
         }
 
-        ItemStack output = getBoostedStack(getWeightedItem(allOutputs, level.getRandom()));
-
-        if(!MinerConfigLoader.getInstance().MINERS_AUTO_EXPORT_INSTEAD_OF_FILLING_THEIR_OWN_INVENTORY) {
-            for (int i = 0; i < itemHandler.size(); i++) {
-                if (output.isEmpty()) break;
-                if (!isItemValid(output, ItemUtil.getStack(itemHandler, i))) continue;
-                // Opens (and commits) its own root transaction; returns what did not fit.
-                output = ItemUtil.insertItemReturnRemaining(itemHandler, i, output, false, null);
+        List<ItemStack> outputs = new ArrayList<>();
+        while (progress >= maxProgress) {
+            ItemStack output = getBoostedStack(getWeightedItem(allOutputs, level.getRandom()), level.getRandom());
+            if (!output.isEmpty()) {
+                outputs.add(output);
             }
-        } else {
-            pushItemsToNeighbors(output);
+            progress -= maxProgress;
         }
 
-        progress = 0;
+        if (!MinerConfigLoader.getInstance().MINERS_AUTO_EXPORT_INSTEAD_OF_FILLING_THEIR_OWN_INVENTORY) {
+            for (ItemStack output : outputs) {
+                ItemStack remaining = output;
+                for (int i = 0; i < itemHandler.size(); i++) {
+                    if (remaining.isEmpty()) break;
+                    if (!isItemValid(remaining, ItemUtil.getStack(itemHandler, i))) continue;
+                    remaining = ItemUtil.insertItemReturnRemaining(itemHandler, i, remaining, false, null);
+                }
+            }
+            if (exportSide != null) {
+                exportToSide();
+            }
+        } else {
+            pushItemsToNeighbors(outputs);
+        }
+
         sync();
+        beforeReturn();
     }
 
-    private void pushItemsToNeighbors(ItemStack outputStack) {
-        if (level == null || level.isClientSide()) return;
-        if (outputStack.isEmpty()) return;
+    public int getMinerTier() {
+        if (structure == null) return 0;
+        return MiscUtil.tierMap.getOrDefault(structure.getPath(), 0);
+    }
 
-        int remainingCount = outputStack.getCount();
-        ItemResource resource = ItemResource.of(outputStack);
+    private int getMaxOutputCount() {
+        int max = 1;
+        for (MinerRecipe recipe : allRecipes()) {
+            max = Math.max(max, recipe.output().stack().getCount());
+        }
+        return max;
+    }
+
+    @Nullable
+    public Direction getExportSide() {
+        return exportSide;
+    }
+
+    public Direction toggleExportSide(Direction side) {
+        exportSide = exportSide == side ? null : side;
+        exportCooldown = 0;
+        sync();
+        return exportSide;
+    }
+
+    private void exportToSide() {
+        if (level == null || level.isClientSide() || exportSide == null) return;
+
+        ResourceHandler<ItemResource> target = level.getCapability(
+                Capabilities.Item.BLOCK,
+                worldPosition.relative(exportSide),
+                exportSide.getOpposite()
+        );
+        if (target == null) return;
+
+        int moved = ResourceHandlerUtil.moveStacking(itemHandler, target, resource -> true, Integer.MAX_VALUE, null);
+        if (moved > 0) {
+            setChanged();
+        }
+    }
+
+    private void beforeReturn() {
+        if (level != null) {
+            lastProcessedGameTime = level.getGameTime();
+        }
+        tickAcceleratedTicks = 1;
+    }
+
+    private void pushItemsToNeighbors(List<ItemStack> outputStacks) {
+        if (level == null || level.isClientSide()) return;
+        if (outputStacks.isEmpty()) return;
+
+        List<ResourceHandler<ItemResource>> receivers = new ArrayList<>();
 
         for (Direction dir : Direction.values()) {
-            if (remainingCount <= 0) break;
-
             BlockPos neighborPos = worldPosition.relative(dir);
             BlockEntity neighbor = level.getBlockEntity(neighborPos);
             if (neighbor == null) continue;
@@ -600,13 +747,27 @@ public class MinerControllerBE extends BlockEntity {
                     dir.getOpposite()
             );
 
-            if (receiver == null) continue;
+            if (receiver != null) {
+                receivers.add(receiver);
+            }
+        }
 
-            // insertStacking with a null transaction opens a root transaction and commits it,
-            // which is the 26.1.2 equivalent of ItemHandlerHelper.insertItemStacked(handler, stack, false).
-            int inserted = ResourceHandlerUtil.insertStacking(receiver, resource, remainingCount, null);
+        for (ItemStack output : outputStacks) {
+            if (receivers.isEmpty()) break;
 
-            remainingCount -= inserted;
+            int remainingCount = output.getCount();
+            ItemResource resource = ItemResource.of(output);
+
+            Iterator<ResourceHandler<ItemResource>> iterator = receivers.iterator();
+            while (iterator.hasNext() && remainingCount > 0) {
+                ResourceHandler<ItemResource> receiver = iterator.next();
+                int inserted = ResourceHandlerUtil.insertStacking(receiver, resource, remainingCount, null);
+                if (inserted <= 0) {
+                    iterator.remove();
+                    continue;
+                }
+                remainingCount -= inserted;
+            }
         }
     }
 
@@ -631,65 +792,83 @@ public class MinerControllerBE extends BlockEntity {
     }
 
     public int getRFPerTick() {
-        float mod = 1;
-
-        for (Map.Entry<BlockInWorld, MinerConfigLoader.ModifierConfig> entry : modifierMap.entrySet()) {
-            mod *= entry.getValue().energy();
-        }
-
-        return (int) (MinerConfigLoader.getInstance().getConfig(name).energyConsumptionPerTick() * mod);
+        return (int) (MinerConfigLoader.getInstance().getConfig(name).energyConsumptionPerTick() * cachedEnergyMod);
     }
 
     public int getMaxProgress() {
-        float mod = 1;
-
-        for (Map.Entry<BlockInWorld, MinerConfigLoader.ModifierConfig> entry : modifierMap.entrySet()) {
-            mod *= entry.getValue().speed();
-        }
-
-        return (int) (MinerConfigLoader.getInstance().getConfig(name).duration() / mod);
+        return (int) (MinerConfigLoader.getInstance().getConfig(name).duration() / cachedSpeedMod);
     }
 
     public float getItemModifierMultiplier() {
-        float mod = 1;
-        for (Map.Entry<BlockInWorld, MinerConfigLoader.ModifierConfig> entry : modifierMap.entrySet()) {
-            mod *= entry.getValue().item();
-        }
-        return mod;
+        return cachedItemMod;
     }
 
     public float getEnergyModifierMultiplier() {
-        float mod = 1;
-        for (Map.Entry<BlockInWorld, MinerConfigLoader.ModifierConfig> entry : modifierMap.entrySet()) {
-            mod *= entry.getValue().energy();
-        }
-        return mod;
+        return cachedEnergyMod;
     }
 
     public float getSpeedModifierMultiplier() {
-        float mod = 1;
-        for (Map.Entry<BlockInWorld, MinerConfigLoader.ModifierConfig> entry : modifierMap.entrySet()) {
-            mod *= entry.getValue().speed();
-        }
-        return mod;
+        return cachedSpeedMod;
     }
 
-    public ItemStack getBoostedStack(ItemStack base) {
-        int count = (base.getCount() * (int) getItemModifierMultiplier());
+    public ItemStack getBoostedStack(ItemStack base, RandomSource random) {
+        if (base.isEmpty()) return ItemStack.EMPTY;
+
+        float multiplier = getItemModifierMultiplier();
+        int wholeMultiplier = (int) multiplier;
+        float fractionalMultiplier = multiplier - wholeMultiplier;
+
+        int count = base.getCount() * wholeMultiplier;
+
+        if (fractionalMultiplier > 0f && random.nextFloat() < fractionalMultiplier) {
+            count += base.getCount();
+        }
+
         return base.copyWithCount(count);
     }
 
+    private boolean hasBlockBeforeGlass(BlockPos pos) {
+        if (level == null || structure == null) return false;
+
+        int glassHeight = MiscUtil.GLASS_HEIGHT.getOrDefault(structure.getPath(), 0);
+
+        for (int i = 0; i < glassHeight; i++) {
+            BlockPos check = pos.below(i + 1);
+            BlockState state = level.getBlockState(check);
+
+            if (state.propagatesSkylightDown() || level.isFluidAtPosition(check, fluidState -> !fluidState.isEmpty())) continue;
+
+            return true;
+        }
+
+        return false;
+    }
+
     private boolean hasViewOnBedrockOrVoid(BlockPos pos) {
-        for (int i = 0; i < 320; i++) {
+        if (level == null) return false;
+        blockUnderneathState = null;
+
+        for (int i = 0; i < level.getHeight(); i++) {
             BlockPos check = pos.below(i + 1);
 
-            assert level != null;
-            if(level.getBlockState(check).is(Blocks.BEDROCK)) return true;
+            if (check.getY() < level.getMinY()) {
+                beamLength = pos.below().getY() - check.getY();
+                return true;
+            }
 
-            // propagatesSkylightDown is now precomputed on the BlockState (BlockBehaviour.java:545) and takes no arguments.
-            if (level.getBlockState(check).propagatesSkylightDown() || level.isFluidAtPosition(check, (fluidState -> !fluidState.isEmpty()))) continue;
+            BlockState state = level.getBlockState(check);
 
-            return false;
+            if (state.is(Blocks.BEDROCK)) {
+                beamLength = pos.below().getY() - check.getY();
+                return true;
+            }
+
+            if (state.propagatesSkylightDown() || level.isFluidAtPosition(check, fluidState -> !fluidState.isEmpty())) continue;
+
+            blockUnderneathState = state;
+            beamLength = pos.below().getY() - check.getY();
+
+            return hasRecipeRequiring(state);
         }
 
         return true;
@@ -711,30 +890,45 @@ public class MinerControllerBE extends BlockEntity {
     }
 
     private List<MinerRecipe> allRecipes() {
-        // Level#getRecipeManager() no longer exists; the recipe map lives behind
-        // ServerLevel#recipeAccess() (ServerLevel.java:1475) -> RecipeManager#recipeMap()
-        // (RecipeManager.java:263) -> RecipeMap#byType (RecipeMap.java:55).
-        // The client no longer receives the full recipe list, hence the server-only guard (unchanged behaviour).
-        if (!(level instanceof ServerLevel serverLevel)) {
-            return new ArrayList<>();
+        List<MinerRecipe> candidates = recipesForTierAndDimension().toList();
+
+        List<MinerRecipe> specific = candidates.stream()
+                .filter(recipe -> recipe.blockUnderneath() != null)
+                .filter(recipe -> blockUnderneathState != null && recipe.blockUnderneath().matches(blockUnderneathState))
+                .toList();
+
+        if (!specific.isEmpty()) {
+            return specific;
         }
 
-        if (structure == null) {
-            return new ArrayList<>();
+        return candidates.stream()
+                .filter(recipe -> recipe.blockUnderneath() == null)
+                .toList();
+    }
+
+    private Stream<MinerRecipe> recipesForTierAndDimension() {
+        if (!(level instanceof ServerLevel serverLevel) || structure == null) {
+            return Stream.empty();
+        }
+
+        Integer tier = MiscUtil.tierMap.get(structure.getPath());
+        if (tier == null) {
+            return Stream.empty();
         }
 
         return serverLevel.recipeAccess().recipeMap().byType(MinerRecipe.TYPE)
                 .stream()
                 .map(RecipeHolder::value)
-                .filter(recipe -> {
-                    if (recipe.allowHigherTiers()) {
-                        return recipe.minTier() <= MiscUtil.tierMap.get(structure.getPath());
-                    } else {
-                        return recipe.minTier() == MiscUtil.tierMap.get(structure.getPath());
-                    }
-                })
-                .filter(recipe -> recipe.dimension().equals(this.level.dimension()))
-                .toList();
+                .filter(recipe -> recipe.allowHigherTiers() ? recipe.minTier() <= tier : recipe.minTier() == tier)
+                .filter(recipe -> recipe.dimension().equals(serverLevel.dimension()));
+    }
+
+    private boolean hasRecipeRequiring(BlockState state) {
+        return recipesForTierAndDimension()
+                .anyMatch(recipe -> {
+                    BlockRequirement requirement = recipe.blockUnderneath();
+                    return requirement != null && requirement.matches(state);
+                });
     }
 
     private boolean isItemValid(ItemStack stack, ItemStack handler) {
@@ -770,22 +964,23 @@ public class MinerControllerBE extends BlockEntity {
     }
 
     public void checkStructure(Level pLevel, BlockPos pPos) {
-        RegisteredMultiBlockPattern pattern = MultiBlockManager.findAnyStructure(pLevel, pPos, Rotation.NONE);
+        foundStructure = false;
 
+        if (structure == null) {
+            return;
+        }
+
+        RegisteredMultiBlockPattern pattern = MinerMultiblocks.MANAGER.getStructure(structure);
         if (pattern == null) {
-            foundStructure = false;
             return;
         }
 
         MultiblockMatchResult result = pattern.pattern().matchesWithResult(pLevel, pPos, Rotation.NONE);
-
         if (result == null) {
-            foundStructure = false;
-            return;
+            result = pattern.pattern().matchesWithResult(pLevel, pPos, Rotation.CLOCKWISE_90);
         }
 
-        if (!pattern.ID().equals(structure)) {
-            foundStructure = false;
+        if (result == null) {
             return;
         }
 
@@ -795,10 +990,22 @@ public class MinerControllerBE extends BlockEntity {
                 .filter(block -> block.getState().getBlock() instanceof ModifierBlock)
                 .forEach(block -> {
                     MinerConfigLoader.ModifierConfig modifier = MinerConfigLoader.getInstance().getModifierConfig(block.getState().getBlock());
-                    if (!modifierMap.containsKey(block)) {
-                        modifierMap.put(block, modifier);
-                    }
+                    modifierMap.putIfAbsent(block, modifier);
                 });
+
+        calculateCachedModifiers();
+    }
+
+    private void calculateCachedModifiers() {
+        float energyMod = 1f, speedMod = 1f, itemMod = 1f;
+        for (MinerConfigLoader.ModifierConfig cfg : modifierMap.values()) {
+            energyMod *= cfg.energy();
+            speedMod *= cfg.speed();
+            itemMod *= cfg.item();
+        }
+        cachedEnergyMod = energyMod;
+        cachedSpeedMod = speedMod;
+        cachedItemMod = itemMod;
     }
 
     public Identifier getStructure() {

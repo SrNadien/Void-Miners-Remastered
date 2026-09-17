@@ -1,0 +1,18 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "ultimatefoods"
+    }
+  ],
+  "type": "voidminersremastered:miner",
+  "dimension": "minecraft:overworld",
+  "minTier": 1,
+  "output": {
+    "stack": {
+      "count": 1,
+      "id": "ultimatefoods:deepslate_mushashite_ore"
+    },
+    "weight": 2.0
+  }
+}

@@ -49,6 +49,9 @@ public class MinerConfigLoader {
     public boolean MINERS_AUTO_EXPORT_INSTEAD_OF_FILLING_THEIR_OWN_INVENTORY = false;
 
     @Expose
+    public int EXPORT_INTERVAL_TICKS = 10;
+
+    @Expose
     public Map<String, Config> MINER_CONFIGS = MapUtil.of(
             MapUtil.createEntry("rubetine", new Config(10000000, 1000, 300,
                     MapUtil.of(

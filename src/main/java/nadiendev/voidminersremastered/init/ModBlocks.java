@@ -42,10 +42,13 @@ public class ModBlocks {
     public static final DeferredHolder<Block, TransparentBlock> GLASS_PANEL = registerBlock("glass_panel",
             TransparentBlock::new,
             () -> BlockBehaviour.Properties.of()
-                    .strength(10, 5)
-                    .requiresCorrectToolForDrops()
+                    .strength(0.3F)
                     .sound(SoundType.GLASS)
                     .noOcclusion()
+                    .isValidSpawn((state, getter, pos, type) -> false)
+                    .isRedstoneConductor((state, getter, pos) -> false)
+                    .isSuffocating((state, getter, pos) -> false)
+                    .isViewBlocking((state, getter, pos) -> false)
     );
 
     public static final DeferredHolder<Block, ModifierBlock> NULL_MOD = registerBlock("null_modifier",

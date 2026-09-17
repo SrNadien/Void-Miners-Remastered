@@ -63,6 +63,10 @@ public class ModBlockTagGenerator extends BlockTagsProvider {
                             set.ITEM_MOD.get()
                     );
 
+            if (set.CRYSTAL != null) {
+                this.tag(common("storage_blocks/" + set.name + "_block")).add(set.CRYSTAL_BLOCK.get());
+            }
+
             this.tag(MINER_MODIFIERS)
                     .add(
                             set.ENERGY_MOD.get(),
@@ -91,6 +95,10 @@ public class ModBlockTagGenerator extends BlockTagsProvider {
                             set.WEATHER_MOD.get()
                     );
 
+            if (set.CRYSTAL != null) {
+                this.tag(common("storage_blocks/solar_" + set.name + "_block")).add(set.CRYSTAL_BLOCK.get());
+            }
+
             this.tag(SOLAR_MODIFIERS)
                     .add(
                             set.EFFICIENCY_MOD.get(),
@@ -105,6 +113,10 @@ public class ModBlockTagGenerator extends BlockTagsProvider {
 
     public static final TagKey<Block> MINER_MODIFIERS = create("miner_modifiers");
     public static final TagKey<Block> SOLAR_MODIFIERS = create("solar_modifiers");
+
+    private static TagKey<Block> common(String path) {
+        return TagKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath("c", path));
+    }
 
     private static TagKey<Block> create(String pName) {
         return TagKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(VoidMinersRemastered.MODID, pName));

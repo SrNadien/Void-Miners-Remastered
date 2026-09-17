@@ -1,0 +1,18 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "alltheores"
+    }
+  ],
+  "type": "voidminersremastered:miner",
+  "dimension": "minecraft:the_nether",
+  "minTier": 1,
+  "output": {
+    "stack": {
+      "count": 1,
+      "id": "alltheores:nether_salt_ore"
+    },
+    "weight": 6.0
+  }
+}

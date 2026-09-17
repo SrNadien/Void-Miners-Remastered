@@ -85,6 +85,7 @@ public class MinerControllerBER implements BlockEntityRenderer<MinerControllerBE
             state.renderBeam = true;
             state.animationTime = (float) Math.floorMod(gameTime, 40) + partialTicks;
             state.beamColor = blockEntity.getBeamColor();
+            state.beamLength = blockEntity.beamLength > 0 ? blockEntity.beamLength : BEAM_LENGTH;
             return;
         }
 
@@ -111,7 +112,7 @@ public class MinerControllerBER implements BlockEntityRenderer<MinerControllerBE
             pose.translate(0.5f, 0, 0.5f);
             pose.mulPose(Axis.YP.rotationDegrees(state.animationTime * 2.25f - 45f));
 
-            submitBeam(pose, collector, new Vector3f(0f, 0f, 0f), state.beamColor, BEAM_LENGTH, BEAM_WIDTH);
+            submitBeam(pose, collector, new Vector3f(0f, 0f, 0f), state.beamColor, state.beamLength, BEAM_WIDTH);
 
             pose.popPose();
             return;
@@ -283,6 +284,7 @@ public class MinerControllerBER implements BlockEntityRenderer<MinerControllerBE
         public boolean renderBeam;
         public float animationTime;
         public int beamColor;
+        public float beamLength;
         public List<PreviewBlock> preview = List.of();
         public int previewOffset;
     }

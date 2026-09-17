@@ -13,15 +13,31 @@ import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.*;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
+import net.neoforged.neoforge.common.conditions.ModLoadedCondition;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public class ModRecipeProvider extends RecipeProvider {
+    public static final ResourceKey<Level> MINING = ResourceKey.create(Registries.DIMENSION, Identifier.fromNamespaceAndPath("allthemodium", "mining"));
+
+    private static final float GEM_WEIGHT_OVERWORLD = 16f;
+    private static final float GEM_WEIGHT_NETHER = 12f;
+    private static final float GEM_WEIGHT_MINING = 16f;
+
+    private static final int[] GEM_OUTPUT_PER_TIER = {8, 9, 12, 15, 19, 34, 40, 55, 64};
+
+    private static void saveGem(CrystalSet set, int tier, float weight, ResourceKey<Level> dimension, RecipeOutput output) {
+        MinerRecipe.Builder.builder(
+                new WeightedStack(new ItemStackTemplate(set.CRYSTAL.get(), GEM_OUTPUT_PER_TIER[tier - 1]), weight), tier, false, dimension
+        ).save(output);
+    }
+
     protected ModRecipeProvider(HolderLookup.Provider registries, RecipeOutput output) {
         super(registries, output);
     }
@@ -488,74 +504,66 @@ public class ModRecipeProvider extends RecipeProvider {
                 new WeightedStack(Items.LAPIS_ORE, 6f),
                 new WeightedStack(Items.IRON_ORE, 8f),
                 new WeightedStack(Items.COPPER_ORE, 12f),
-                new WeightedStack(Items.COAL_ORE, 16f),
-                new WeightedStack(CrystalSet.RUBETINE.CRYSTAL.get(), 2f),
-                new WeightedStack(CrystalSet.AURANTIUM.CRYSTAL.get(), 2f)
+                new WeightedStack(Items.COAL_ORE, 16f)
+        );
+
+        List<WeightedStack> DEEPSLATE = List.of(
+                new WeightedStack(Items.DEEPSLATE_EMERALD_ORE, 0.5f),
+                new WeightedStack(Items.DEEPSLATE_DIAMOND_ORE, 1f),
+                new WeightedStack(Items.DEEPSLATE_GOLD_ORE, 2f),
+                new WeightedStack(Items.DEEPSLATE_REDSTONE_ORE, 3f),
+                new WeightedStack(Items.DEEPSLATE_LAPIS_ORE, 3f),
+                new WeightedStack(Items.DEEPSLATE_IRON_ORE, 4f),
+                new WeightedStack(Items.DEEPSLATE_COPPER_ORE, 6f),
+                new WeightedStack(Items.DEEPSLATE_COAL_ORE, 8f)
         );
 
         for (WeightedStack stack : OVERWORLD) {
             MinerRecipe.Builder.builder(stack, 1, Level.OVERWORLD).save(this.output);
         }
 
+        for (WeightedStack stack : DEEPSLATE) {
+            MinerRecipe.Builder.builder(stack, 1, Level.OVERWORLD).save(this.output);
+        }
+
         List<WeightedStack> NETHER = List.of(
                 new WeightedStack(Items.NETHER_QUARTZ_ORE, 10f),
                 new WeightedStack(Items.NETHER_GOLD_ORE, 5f),
-                new WeightedStack(Items.ANCIENT_DEBRIS, 0.1f),
-                new WeightedStack(CrystalSet.RUBETINE.CRYSTAL.get(), 2f),
-                new WeightedStack(CrystalSet.AURANTIUM.CRYSTAL.get(), 2f)
+                new WeightedStack(Items.ANCIENT_DEBRIS, 0.1f)
         );
 
         for (WeightedStack stack : NETHER) {
             MinerRecipe.Builder.builder(stack, 1, Level.NETHER).save(this.output);
         }
 
-        MinerRecipe.Builder.builder(
-                new WeightedStack(CrystalSet.CITRINETINE.CRYSTAL.get(), 2f), 2, Level.OVERWORLD
-        ).save(this.output);
+        RecipeOutput miningOutput = this.output.withConditions(new ModLoadedCondition("allthemodium"));
 
-        MinerRecipe.Builder.builder(
-                new WeightedStack(CrystalSet.CITRINETINE.CRYSTAL.get(), 4f), 2, Level.NETHER
-        ).save(this.output);
+        for (WeightedStack stack : OVERWORLD) {
+            MinerRecipe.Builder.builder(stack.copy(), 1, MINING).save(miningOutput);
+        }
 
-        MinerRecipe.Builder.builder(
-                new WeightedStack(CrystalSet.VERDIUM.CRYSTAL.get(), 2f), 3, Level.OVERWORLD
-        ).save(this.output);
+        for (WeightedStack stack : DEEPSLATE) {
+            MinerRecipe.Builder.builder(stack.copy(), 1, MINING).save(miningOutput);
+        }
 
-        MinerRecipe.Builder.builder(
-                new WeightedStack(CrystalSet.VERDIUM.CRYSTAL.get(), 4f), 3, Level.NETHER
-        ).save(this.output);
+        MinerRecipe.Builder.builder(new WeightedStack(Items.NETHER_QUARTZ_ORE, 6f), 1, MINING).save(miningOutput);
+        MinerRecipe.Builder.builder(new WeightedStack(Items.ANCIENT_DEBRIS, 0.1f), 1, MINING).save(miningOutput);
 
-        MinerRecipe.Builder.builder(
-                new WeightedStack(CrystalSet.AZURINE.CRYSTAL.get(), 2f), 4, Level.OVERWORLD
-        ).save(this.output);
+        List<CrystalSet> gemSets = CrystalSet.sets();
+        for (int i = 0; i < gemSets.size(); i++) {
+            CrystalSet set = gemSets.get(i);
+            if (set.CRYSTAL == null) {
+                continue;
+            }
 
-        MinerRecipe.Builder.builder(
-                new WeightedStack(CrystalSet.AZURINE.CRYSTAL.get(), 4f), 4, Level.NETHER
-        ).save(this.output);
+            int gemTier = Math.max(1, i);
 
-        MinerRecipe.Builder.builder(
-                new WeightedStack(CrystalSet.CAERIUM.CRYSTAL.get(), 2f), 5, Level.OVERWORLD
-        ).save(this.output);
-
-        MinerRecipe.Builder.builder(
-                new WeightedStack(CrystalSet.CAERIUM.CRYSTAL.get(), 4f), 5, Level.NETHER
-        ).save(this.output);
-
-        MinerRecipe.Builder.builder(
-                new WeightedStack(CrystalSet.AMETHYSTINE.CRYSTAL.get(), 2f), 6, Level.OVERWORLD
-        ).save(this.output);
-
-        MinerRecipe.Builder.builder(
-                new WeightedStack(CrystalSet.AMETHYSTINE.CRYSTAL.get(), 4f), 6, Level.NETHER
-        ).save(this.output);
-
-        MinerRecipe.Builder.builder(
-                new WeightedStack(CrystalSet.ROSARIUM.CRYSTAL.get(), 2f), 7, Level.OVERWORLD
-        ).save(this.output);
-
-        MinerRecipe.Builder.builder(
-                new WeightedStack(CrystalSet.ROSARIUM.CRYSTAL.get(), 4f), 7, Level.NETHER
-        ).save(this.output);
+            for (int tier = gemTier; tier <= GEM_OUTPUT_PER_TIER.length; tier++) {
+                saveGem(set, tier, GEM_WEIGHT_OVERWORLD, Level.OVERWORLD, this.output);
+                saveGem(set, tier, GEM_WEIGHT_NETHER, Level.NETHER, this.output);
+                saveGem(set, tier, GEM_WEIGHT_MINING, MINING, miningOutput);
+            }
+        }
 
         MinerRecipe.Builder.builder(
                 new WeightedStack(ModItems.ULTIMATE_STELLAR_CORE.get(), 0.000005f), 8, false, Level.END
@@ -588,7 +596,7 @@ public class ModRecipeProvider extends RecipeProvider {
                 .pattern("TST")
                 .pattern("CCC")
                 .define('S', Items.NETHERITE_BLOCK)
-                .define('T', ModItems.MAX_STORAGE_UPGRADE_T2.get())
+                .define('T', ModItems.MAX_STORAGE_UPGRADE_T1.get())
                 .define('C', CrystalSet.CAERIUM.CRYSTAL.get())
                 .unlockedBy("hasItem", this.has(ModItems.MAX_STORAGE_UPGRADE_T1.get()))
                 .save(this.output);
@@ -602,10 +610,11 @@ public class ModRecipeProvider extends RecipeProvider {
                 .pattern("TST")
                 .pattern("CCC")
                 .define('S', Items.NETHER_STAR)
-                .define('T', ModItems.MAX_STORAGE_UPGRADE_T3.get())
+                .define('T', ModItems.MAX_STORAGE_UPGRADE_T2.get())
                 .define('C', ModItems.ULTIMATE_STELLAR_CORE.get())
                 .unlockedBy("hasItem", this.has(ModItems.MAX_STORAGE_UPGRADE_T2.get()))
                 .save(this.output);
+
 
     }
 

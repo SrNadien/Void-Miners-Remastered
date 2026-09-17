@@ -78,6 +78,8 @@ public class JeiPlugin implements IModPlugin {
             alphabetical.thenComparing(weight))
             .toList();
 
+        tiers.get(tier).updateWeights(foundRecipes);
+
         registration.addRecipes(
             tiers.get(tier).getRecipeType(),
             foundRecipes

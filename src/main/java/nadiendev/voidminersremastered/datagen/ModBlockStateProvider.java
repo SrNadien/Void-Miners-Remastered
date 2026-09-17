@@ -21,6 +21,8 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.neoforged.neoforge.registries.DeferredHolder;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -155,6 +157,18 @@ public class ModBlockStateProvider extends ModelProvider {
             mapping.put(LAYER_SLOTS[i], modTexture(layers[i]));
         }
         Identifier model = template.create(block, mapping, blockModels.modelOutput);
+
+        Map<String, String> textures = new LinkedHashMap<>();
+        for (int i = 0; i < layers.length; i++) {
+            textures.put("layer" + i, modLoc(layers[i]).toString());
+        }
+        String templateName = switch (layers.length) {
+            case 2 -> "dual_layer";
+            case 3 -> "triple_layer";
+            default -> "quad_layer";
+        };
+        ModConnectedTexturesProvider.record(model.getPath().substring("block/".length()), modLoc("block/_template/" + templateName).toString(), textures);
+
         simpleBlockWithItem(blockModels, block, model);
     }
 }

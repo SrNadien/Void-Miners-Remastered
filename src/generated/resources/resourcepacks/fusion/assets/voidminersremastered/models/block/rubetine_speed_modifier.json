@@ -1,0 +1,590 @@
+{
+  "type": "fusion:connecting",
+  "parent": "minecraft:block/block",
+  "connections": {
+    "layer0": {
+      "type": "fusion:is_same_block"
+    },
+    "layer1": {
+      "type": "fusion:is_same_block"
+    },
+    "layer2": {
+      "type": "fusion:or",
+      "predicates": [
+        {
+          "type": "fusion:match_block",
+          "block": "voidminersremastered:frame_base"
+        },
+        {
+          "type": "fusion:match_block",
+          "block": "voidminersremastered:structure_panel"
+        },
+        {
+          "type": "fusion:match_block",
+          "block": "voidminersremastered:null_modifier"
+        },
+        {
+          "type": "fusion:match_block",
+          "block": "voidminersremastered:rubetine_frame"
+        },
+        {
+          "type": "fusion:match_block",
+          "block": "voidminersremastered:rubetine_energy_modifier"
+        },
+        {
+          "type": "fusion:match_block",
+          "block": "voidminersremastered:rubetine_speed_modifier"
+        },
+        {
+          "type": "fusion:match_block",
+          "block": "voidminersremastered:rubetine_item_modifier"
+        },
+        {
+          "type": "fusion:match_block",
+          "block": "voidminersremastered:aurantium_frame"
+        },
+        {
+          "type": "fusion:match_block",
+          "block": "voidminersremastered:aurantium_energy_modifier"
+        },
+        {
+          "type": "fusion:match_block",
+          "block": "voidminersremastered:aurantium_speed_modifier"
+        },
+        {
+          "type": "fusion:match_block",
+          "block": "voidminersremastered:aurantium_item_modifier"
+        },
+        {
+          "type": "fusion:match_block",
+          "block": "voidminersremastered:citrinetine_frame"
+        },
+        {
+          "type": "fusion:match_block",
+          "block": "voidminersremastered:citrinetine_energy_modifier"
+        },
+        {
+          "type": "fusion:match_block",
+          "block": "voidminersremastered:citrinetine_speed_modifier"
+        },
+        {
+          "type": "fusion:match_block",
+          "block": "voidminersremastered:citrinetine_item_modifier"
+        },
+        {
+          "type": "fusion:match_block",
+          "block": "voidminersremastered:verdium_frame"
+        },
+        {
+          "type": "fusion:match_block",
+          "block": "voidminersremastered:verdium_energy_modifier"
+        },
+        {
+          "type": "fusion:match_block",
+          "block": "voidminersremastered:verdium_speed_modifier"
+        },
+        {
+          "type": "fusion:match_block",
+          "block": "voidminersremastered:verdium_item_modifier"
+        },
+        {
+          "type": "fusion:match_block",
+          "block": "voidminersremastered:azurine_frame"
+        },
+        {
+          "type": "fusion:match_block",
+          "block": "voidminersremastered:azurine_energy_modifier"
+        },
+        {
+          "type": "fusion:match_block",
+          "block": "voidminersremastered:azurine_speed_modifier"
+        },
+        {
+          "type": "fusion:match_block",
+          "block": "voidminersremastered:azurine_item_modifier"
+        },
+        {
+          "type": "fusion:match_block",
+          "block": "voidminersremastered:caerium_frame"
+        },
+        {
+          "type": "fusion:match_block",
+          "block": "voidminersremastered:caerium_energy_modifier"
+        },
+        {
+          "type": "fusion:match_block",
+          "block": "voidminersremastered:caerium_speed_modifier"
+        },
+        {
+          "type": "fusion:match_block",
+          "block": "voidminersremastered:caerium_item_modifier"
+        },
+        {
+          "type": "fusion:match_block",
+          "block": "voidminersremastered:amethystine_frame"
+        },
+        {
+          "type": "fusion:match_block",
+          "block": "voidminersremastered:amethystine_energy_modifier"
+        },
+        {
+          "type": "fusion:match_block",
+          "block": "voidminersremastered:amethystine_speed_modifier"
+        },
+        {
+          "type": "fusion:match_block",
+          "block": "voidminersremastered:amethystine_item_modifier"
+        },
+        {
+          "type": "fusion:match_block",
+          "block": "voidminersremastered:rosarium_frame"
+        },
+        {
+          "type": "fusion:match_block",
+          "block": "voidminersremastered:rosarium_energy_modifier"
+        },
+        {
+          "type": "fusion:match_block",
+          "block": "voidminersremastered:rosarium_speed_modifier"
+        },
+        {
+          "type": "fusion:match_block",
+          "block": "voidminersremastered:rosarium_item_modifier"
+        },
+        {
+          "type": "fusion:match_block",
+          "block": "voidminersremastered:ultimate_frame"
+        },
+        {
+          "type": "fusion:match_block",
+          "block": "voidminersremastered:ultimate_energy_modifier"
+        },
+        {
+          "type": "fusion:match_block",
+          "block": "voidminersremastered:ultimate_speed_modifier"
+        },
+        {
+          "type": "fusion:match_block",
+          "block": "voidminersremastered:ultimate_item_modifier"
+        },
+        {
+          "type": "fusion:match_block",
+          "block": "voidminersremastered:solar_rubetine_frame"
+        },
+        {
+          "type": "fusion:match_block",
+          "block": "voidminersremastered:solar_rubetine_efficiency_modifier"
+        },
+        {
+          "type": "fusion:match_block",
+          "block": "voidminersremastered:solar_rubetine_weather_modifier"
+        },
+        {
+          "type": "fusion:match_block",
+          "block": "voidminersremastered:solar_aurantium_frame"
+        },
+        {
+          "type": "fusion:match_block",
+          "block": "voidminersremastered:solar_aurantium_efficiency_modifier"
+        },
+        {
+          "type": "fusion:match_block",
+          "block": "voidminersremastered:solar_aurantium_weather_modifier"
+        },
+        {
+          "type": "fusion:match_block",
+          "block": "voidminersremastered:solar_citrinetine_frame"
+        },
+        {
+          "type": "fusion:match_block",
+          "block": "voidminersremastered:solar_citrinetine_efficiency_modifier"
+        },
+        {
+          "type": "fusion:match_block",
+          "block": "voidminersremastered:solar_citrinetine_weather_modifier"
+        },
+        {
+          "type": "fusion:match_block",
+          "block": "voidminersremastered:solar_verdium_frame"
+        },
+        {
+          "type": "fusion:match_block",
+          "block": "voidminersremastered:solar_verdium_efficiency_modifier"
+        },
+        {
+          "type": "fusion:match_block",
+          "block": "voidminersremastered:solar_verdium_weather_modifier"
+        },
+        {
+          "type": "fusion:match_block",
+          "block": "voidminersremastered:solar_azurine_frame"
+        },
+        {
+          "type": "fusion:match_block",
+          "block": "voidminersremastered:solar_azurine_efficiency_modifier"
+        },
+        {
+          "type": "fusion:match_block",
+          "block": "voidminersremastered:solar_azurine_weather_modifier"
+        },
+        {
+          "type": "fusion:match_block",
+          "block": "voidminersremastered:solar_caerium_frame"
+        },
+        {
+          "type": "fusion:match_block",
+          "block": "voidminersremastered:solar_caerium_efficiency_modifier"
+        },
+        {
+          "type": "fusion:match_block",
+          "block": "voidminersremastered:solar_caerium_weather_modifier"
+        },
+        {
+          "type": "fusion:match_block",
+          "block": "voidminersremastered:solar_amethystine_frame"
+        },
+        {
+          "type": "fusion:match_block",
+          "block": "voidminersremastered:solar_amethystine_efficiency_modifier"
+        },
+        {
+          "type": "fusion:match_block",
+          "block": "voidminersremastered:solar_amethystine_weather_modifier"
+        },
+        {
+          "type": "fusion:match_block",
+          "block": "voidminersremastered:solar_rosarium_frame"
+        },
+        {
+          "type": "fusion:match_block",
+          "block": "voidminersremastered:solar_rosarium_efficiency_modifier"
+        },
+        {
+          "type": "fusion:match_block",
+          "block": "voidminersremastered:solar_rosarium_weather_modifier"
+        },
+        {
+          "type": "fusion:match_block",
+          "block": "voidminersremastered:solar_ultimate_frame"
+        },
+        {
+          "type": "fusion:match_block",
+          "block": "voidminersremastered:solar_ultimate_efficiency_modifier"
+        },
+        {
+          "type": "fusion:match_block",
+          "block": "voidminersremastered:solar_ultimate_weather_modifier"
+        }
+      ]
+    },
+    "layer3": {
+      "type": "fusion:is_same_block"
+    }
+  },
+  "elements": [
+    {
+      "faces": {
+        "down": {
+          "cullface": "down",
+          "texture": "#layer0",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "cullface": "east",
+          "texture": "#layer0",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "north": {
+          "cullface": "north",
+          "texture": "#layer0",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "cullface": "south",
+          "texture": "#layer0",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "up": {
+          "cullface": "up",
+          "texture": "#layer0",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "west": {
+          "cullface": "west",
+          "texture": "#layer0",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        }
+      },
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ]
+    },
+    {
+      "faces": {
+        "down": {
+          "cullface": "down",
+          "texture": "#layer3",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "cullface": "east",
+          "texture": "#layer3",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "north": {
+          "cullface": "north",
+          "texture": "#layer3",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "cullface": "south",
+          "texture": "#layer3",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "up": {
+          "cullface": "up",
+          "texture": "#layer3",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "west": {
+          "cullface": "west",
+          "texture": "#layer3",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        }
+      },
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ]
+    },
+    {
+      "faces": {
+        "down": {
+          "cullface": "down",
+          "texture": "#layer1",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "cullface": "east",
+          "texture": "#layer1",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "north": {
+          "cullface": "north",
+          "texture": "#layer1",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "cullface": "south",
+          "texture": "#layer1",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "up": {
+          "cullface": "up",
+          "texture": "#layer1",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "west": {
+          "cullface": "west",
+          "texture": "#layer1",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        }
+      },
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ]
+    },
+    {
+      "faces": {
+        "down": {
+          "cullface": "down",
+          "texture": "#layer2",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "cullface": "east",
+          "texture": "#layer2",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "north": {
+          "cullface": "north",
+          "texture": "#layer2",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "cullface": "south",
+          "texture": "#layer2",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "up": {
+          "cullface": "up",
+          "texture": "#layer2",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "west": {
+          "cullface": "west",
+          "texture": "#layer2",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        }
+      },
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ]
+    }
+  ],
+  "loader": "fusion:model",
+  "textures": {
+    "layer0": "voidminersremastered:block/_core/speed",
+    "layer1": "voidminersremastered:block/_core/modifier",
+    "layer2": "voidminersremastered:block/_core/cover",
+    "layer3": "voidminersremastered:block/rubetine/core",
+    "particle": "#layer0"
+  }
+}

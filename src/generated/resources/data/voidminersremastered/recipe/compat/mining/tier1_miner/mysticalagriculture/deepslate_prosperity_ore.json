@@ -1,0 +1,22 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "mysticalagriculture"
+    },
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "allthemodium"
+    }
+  ],
+  "type": "voidminersremastered:miner",
+  "dimension": "allthemodium:mining",
+  "minTier": 1,
+  "output": {
+    "stack": {
+      "count": 1,
+      "id": "mysticalagriculture:deepslate_prosperity_ore"
+    },
+    "weight": 2.0
+  }
+}

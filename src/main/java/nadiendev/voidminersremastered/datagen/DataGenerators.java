@@ -22,10 +22,13 @@ public class DataGenerators {
         event.createProvider(ModItemModelProvider::new);
 
         event.createProvider(ModRecipeProvider.Runner::new);
+        event.createProvider(ModCompatRecipeProvider::new);
+        event.createProvider(ModConnectedTexturesProvider::new);
 
         event.createProvider(ModLootTableProvider::create);
 
         event.createProvider(ModBlockTagGenerator::new);
+        event.createProvider(ModItemTagGenerator::new);
 
         event.createProvider(output -> new ModLanguageProvider(output, "en_us"));
         event.createProvider(output -> new ModLanguageProvider.EsEs(output, "es_es"));

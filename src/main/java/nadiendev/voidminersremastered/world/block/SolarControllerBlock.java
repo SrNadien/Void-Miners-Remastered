@@ -1,11 +1,17 @@
 package nadiendev.voidminersremastered.world.block;
 
+import nadiendev.voidminersremastered.config.SolarConfigLoader;
 import nadiendev.voidminersremastered.util.CustomColorUtil;
+import nadiendev.voidminersremastered.util.EnergyFormatUtil;
 import nadiendev.voidminersremastered.world.block.entity.SolarControllerBE;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -20,6 +26,8 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.function.Consumer;
+
 public class SolarControllerBlock extends ColoredBlock implements EntityBlock {
     final Identifier structure;
     final String name;
@@ -28,6 +36,13 @@ public class SolarControllerBlock extends ColoredBlock implements EntityBlock {
         super(pProperties, color);
         this.structure = structure;
         this.name = name;
+    }
+
+    public void appendControllerTooltip(Consumer<Component> tooltipAdder) {
+        SolarConfigLoader.Config config = SolarConfigLoader.getInstance().getConfig(name);
+
+        tooltipAdder.accept(Component.translatable("tooltip.voidminersremastered.controller.item.generation_per_tick", EnergyFormatUtil.format(config.energyGenerationPerTick())).withStyle(ChatFormatting.YELLOW));
+        tooltipAdder.accept(Component.translatable("tooltip.voidminersremastered.controller.item.energy_capacity", EnergyFormatUtil.format(config.energyStorage())).withStyle(ChatFormatting.GOLD));
     }
 
     @Nullable
@@ -47,6 +62,14 @@ public class SolarControllerBlock extends ColoredBlock implements EntityBlock {
         if (pPlayer.isCrouching()) {
             if (blockEntity != null && !blockEntity.foundStructure) {
                 blockEntity.updateShowStructure();
+            } else if (blockEntity != null) {
+                Direction side = blockEntity.toggleExportSide(pHit.getDirection());
+                if (pPlayer instanceof ServerPlayer serverPlayer) {
+                    serverPlayer.sendSystemMessage(side == null
+                        ? Component.translatable("client_message.voidminersremastered.export.all_sides")
+                        : Component.translatable("client_message.voidminersremastered.export.enabled",
+                                Component.translatable("tooltip.voidminersremastered.controller.export.side." + side.getName())), true);
+                }
             }
             return InteractionResult.CONSUME;
         }

@@ -1,9 +1,13 @@
 package nadiendev.voidminersremastered.world.block;
 
+import nadiendev.voidminersremastered.config.MinerConfigLoader;
 import nadiendev.voidminersremastered.init.ModDataComponents;
+import nadiendev.voidminersremastered.util.EnergyFormatUtil;
 import nadiendev.voidminersremastered.util.CustomColorUtil;
 import nadiendev.voidminersremastered.world.block.entity.MinerControllerBE;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
@@ -24,6 +28,8 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.function.Consumer;
 
 public class MinerControllerBlock extends ColoredBlock implements EntityBlock {
     final Identifier structure;
@@ -74,6 +80,12 @@ public class MinerControllerBlock extends ColoredBlock implements EntityBlock {
         if (pPlayer.isCrouching()) {
             if (blockEntity != null && !blockEntity.foundStructure) {
                 blockEntity.updateShowStructure();
+            } else if (blockEntity != null) {
+                Direction side = blockEntity.toggleExportSide(pHitResult.getDirection());
+                message(pPlayer, side == null
+                        ? Component.translatable("client_message.voidminersremastered.export.disabled")
+                        : Component.translatable("client_message.voidminersremastered.export.enabled",
+                                Component.translatable("tooltip.voidminersremastered.controller.export.side." + side.getName())), true);
             }
             return InteractionResult.CONSUME;
         }
@@ -149,6 +161,14 @@ public class MinerControllerBlock extends ColoredBlock implements EntityBlock {
         }
 
         message(pPlayer, Component.translatable("client_message.voidminersremastered.max_storage_upgrades.upgrade_applied", newAddedSlots), true);
+    }
+
+    public void appendControllerTooltip(Consumer<Component> tooltipAdder) {
+        MinerConfigLoader.Config config = MinerConfigLoader.getInstance().getConfig(name);
+
+        tooltipAdder.accept(Component.translatable("tooltip.voidminersremastered.controller.item.energy_per_tick", EnergyFormatUtil.format(config.energyConsumptionPerTick())).withStyle(ChatFormatting.YELLOW));
+        tooltipAdder.accept(Component.translatable("tooltip.voidminersremastered.controller.item.duration", config.duration()).withStyle(ChatFormatting.GREEN));
+        tooltipAdder.accept(Component.translatable("tooltip.voidminersremastered.controller.item.energy_capacity", EnergyFormatUtil.format(config.energyStorage())).withStyle(ChatFormatting.GOLD));
     }
 
     @Override

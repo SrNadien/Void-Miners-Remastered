@@ -34,5 +34,10 @@ public interface VoidMinerRecipeSchema {
         .optional(true)
         .alwaysWrite();
     
-    RecipeSchema SCHEMA = new RecipeSchema(ITEM, DIMENSION, MIN_TIER, WEIGHT, COUNT, ALLOW_HIGHER_TIERS);
+    RecipeKey<String> BLOCK_UNDERNEATH = StringComponent.STRING
+        .key("blockUnderneath", ComponentRole.OTHER)
+        .optional("none")
+        .alwaysWrite();
+
+    RecipeSchema SCHEMA = new RecipeSchema(ITEM, DIMENSION, MIN_TIER, WEIGHT, COUNT, ALLOW_HIGHER_TIERS, BLOCK_UNDERNEATH);
 }

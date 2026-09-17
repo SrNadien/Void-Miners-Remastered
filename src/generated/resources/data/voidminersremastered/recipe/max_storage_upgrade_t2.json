@@ -4,7 +4,7 @@
   "key": {
     "C": "voidminersremastered:caerium",
     "S": "minecraft:netherite_block",
-    "T": "voidminersremastered:max_storage_upgrade_t2"
+    "T": "voidminersremastered:max_storage_upgrade_t1"
   },
   "pattern": [
     "CTC",
