@@ -1,23 +1,24 @@
-# Void Miners Remastered 2.0.1 — Minecraft 1.21.1
+# Void Miners Remastered 2.0.2 — Minecraft 1.21.1
 
 ## Added
 
-- **Ores from other mods in the miners**, loaded only when the mod is installed (`neoforge:mod_loaded`):
-  Mekanism, AllTheModium, AllTheOres, Oritech, Create, Immersive Engineering, Actually Additions,
-  Ad Astra (per planet), Bigger Reactors Revived, Create: Better Motors, Create Nuclear, Draconic Evolution,
-  Ender IO Evolution, Energized Power, Malum, Mekanism Extras, Mekanism More Machine, Modern Foundry,
-  Mystical Agriculture / Agradditions, Occultism, Powah, Small Progressions, UltimateFoods and XyCraft World.
-  Each ore is available in the dimension where it generates.
-- **Deepslate ores** (vanilla and modded) in the Overworld.
-- **AllTheModium Mining dimension support**: every ore and every Void Miners gem can be mined there.
-  AllTheModium's The Other gets its own ores too.
-- **Gem output per miner tier**: gems now drop 8 / 9 / 12 / 15 / 19 / 34 / 40 / 55 / 64 per operation
-  depending on the miner tier, and JEI shows the amount.
-- **Configurable output side**: sneak + right-click a face of a formed Miner Controller to push the
-  mined items into the inventory on that side. Same on the Solar Controller to choose which side
-  outputs energy (all sides by default). Interval configurable with `EXPORT_INTERVAL_TICKS`.
-- **Fusion connected textures** (optional): frames, glass and modifiers connect across the multiblock
-  when Fusion is installed.
-- JEI: hold SHIFT for percentages, CTRL for the full weight/chance value; recipe ID shown.
-- `c:gems/*` and `c:storage_blocks/*` tags.
+- **Face Configurator**: right-click a face of a Miner or Solar Controller with it to choose the side
+  it outputs to. The Miner pushes its mined items into the inventory on that side, the Solar Controller
+  sends its energy there. Right-click the same face again to turn it off. Sneak + right-click on the
+  controller does the same without the item.
+- **Gem output per miner tier**, off by default: turn on `GEM_OUTPUT_PER_TIER_ENABLED` in
+  `voidminers-miners.json5` and each operation gives 8 / 9 / 12 / 15 / 19 / 34 / 40 / 55 / 64 gems
+  depending on the miner tier. The amounts are configurable and JEI shows them.
 
+## Changed
+
+- Max Storage Upgrades are now **Storage Upgrade MK1 / MK2 / MK3**, with new textures. Existing
+  upgrades in inventories and installed in miners are migrated automatically and are not lost.
+- New texture for the Ultimate Stellar Core.
+- Requires Mango's Multiblock Library Revived **3.0.1** or newer.
+
+## Fixed
+
+- Miners now tell their neighbours when a Storage Upgrade changes their inventory, so pipes and
+  ME Storage / Export Buses no longer keep talking to the old one.
+- The required library version range was written as a CurseForge file id instead of a version.

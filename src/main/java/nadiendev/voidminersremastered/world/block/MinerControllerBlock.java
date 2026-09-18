@@ -5,6 +5,7 @@ import net.minecraft.world.item.TooltipFlag;
 import nadiendev.voidminersremastered.config.MinerConfigLoader;
 import nadiendev.voidminersremastered.init.ModDataComponents;
 import nadiendev.voidminersremastered.init.ModItems;
+import nadiendev.voidminersremastered.init.ModItems;
 import nadiendev.voidminersremastered.util.ColorUtil;
 import nadiendev.voidminersremastered.world.block.entity.MinerControllerBE;
 import net.minecraft.core.BlockPos;
@@ -95,6 +96,15 @@ public class MinerControllerBlock extends ColoredBlock implements EntityBlock {
 
         if (pLevel.isClientSide) {
             return ItemInteractionResult.sidedSuccess(pLevel.isClientSide());
+        }
+
+        if (pStack.is(ModItems.FACE_CONFIGURATOR.get()) && blockEntity != null) {
+            Direction side = blockEntity.toggleExportSide(pHitResult.getDirection());
+            pPlayer.displayClientMessage(side == null
+                    ? Component.translatable("client_message.voidminers.export.disabled")
+                    : Component.translatable("client_message.voidminers.export.enabled",
+                            Component.translatable("tooltip.voidminers.controller.export.side." + side.getName())), true);
+            return ItemInteractionResult.CONSUME;
         }
 
         if (pStack.getItem().components().get(ModDataComponents.MAX_STORAGE_UPGRADE_SLOTS.get()) != null) {

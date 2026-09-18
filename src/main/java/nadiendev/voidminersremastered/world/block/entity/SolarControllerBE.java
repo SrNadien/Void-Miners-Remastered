@@ -40,7 +40,6 @@ public class SolarControllerBE extends BlockEntity {
 
     public boolean showStructure = false;
 
-
     private final Map<BlockInWorld, SolarConfigLoader.ModifierConfig> modifierMap = new HashMap<>();
 
     private ResourceLocation structure;
@@ -50,17 +49,12 @@ public class SolarControllerBE extends BlockEntity {
 
     public boolean canSeeSky = false;
 
-    @Nullable
-    private Direction exportSide = null;
-
     private HaltReason haltReason = HaltReason.NONE;
 
     private int checkStructureTTL = 0;
 
-    private int tickAcceleratedTicks = 1;
-
-    private float cachedEfficiencyMod = 1f;
-    private float cachedWeatherResistanceMod = 0f;
+    @Nullable
+    private Direction exportSide = null;
 
     public SolarControllerBE(BlockPos pPos, BlockState pBlockState) {
         super(ModBlockEntities.SOLAR_CONTROLLER_BE.get(), pPos, pBlockState);
@@ -110,8 +104,7 @@ public class SolarControllerBE extends BlockEntity {
 
                 tooltip.add(Component.translatable("tooltip.voidminers.controller.halt_reason.structure_not_found").withStyle(ChatFormatting.YELLOW));
 
-                MiscUtil.getNeededBlocks(MiscUtil.structureMap.get(structure.toString()))
-                        .forEach((string, integer) -> {
+                MiscUtil.getNeededBlocks(MiscUtil.structureMap.get(structure.toString())).forEach((string, integer) -> {
                     tooltip.add(Component.literal("• ").withStyle(ChatFormatting.GRAY)
                             .append(Component.literal(string.contains("Null") ? "Modifier" : string).withStyle(ChatFormatting.WHITE))
                             .append(Component.literal(": ").withStyle(ChatFormatting.GRAY))
@@ -150,14 +143,14 @@ public class SolarControllerBE extends BlockEntity {
                         "%s §f%,d §7/ §f%,d RF", energyBar, energyHandler.getLongEnergyStored(), energyHandler.getLongMaxEnergyStored()))));
 
         tooltip.add(Component.translatable("tooltip.voidminers.controller.generation").withStyle(net.minecraft.ChatFormatting.GREEN)
-                .append(Component.literal(String.format("%,d RF/tick §b(%.2f×)", getRFPerTick(getSolarEfficiency()), getEfficiencyModifierMultiplier())).withStyle(net.minecraft.ChatFormatting.WHITE)));
+                .append(Component.literal(String.format("%,d RF/tick", getRFPerTick(getSolarEfficiency()))).withStyle(net.minecraft.ChatFormatting.WHITE)));
 
         tooltip.add(Component.translatable("tooltip.voidminers.controller.efficiency").withStyle(net.minecraft.ChatFormatting.YELLOW)
                 .append(Component.literal(String.format("%.2f%%", getSolarEfficiency() * 100)).withStyle(net.minecraft.ChatFormatting.WHITE)));
 
-        if (getSolarEfficiency() != 1.0f) {
+        if(getSolarEfficiency() != 1.0f) {
             assert level != null;
-            if (level.isRaining() && level.isThundering()) {
+            if(level.isRaining() && level.isThundering()) {
                 tooltip.add(Component.translatable("tooltip.voidminers.controller.efficiency_limited_by_thunder").withStyle(net.minecraft.ChatFormatting.YELLOW));
             } else if (level.isRaining()) {
                 tooltip.add(Component.translatable("tooltip.voidminers.controller.efficiency_limited_by_rain").withStyle(net.minecraft.ChatFormatting.YELLOW));
@@ -165,7 +158,6 @@ public class SolarControllerBE extends BlockEntity {
                 tooltip.add(Component.translatable("tooltip.voidminers.controller.efficiency_limited_by_time_of_day").withStyle(net.minecraft.ChatFormatting.YELLOW));
             }
         }
-
     }
 
     private String getEnergyBar(long current, long max) {
@@ -199,259 +191,6 @@ public class SolarControllerBE extends BlockEntity {
     public void updateShowStructure() {
         showStructure = !showStructure;
         sync();
-    }
-
-    @Override
-    public void onLoad() {
-        super.onLoad();
-        setupEnergyStorage();
-    }
-
-    @Override
-    public CompoundTag getUpdateTag(HolderLookup.Provider pRegistries) {
-        CompoundTag tag = super.getUpdateTag(pRegistries);
-        saveAdditional(tag, pRegistries);
-        return tag;
-    }
-
-    @Nullable
-    @Override
-    public Packet<ClientGamePacketListener> getUpdatePacket() {
-        return ClientboundBlockEntityDataPacket.create(this);
-    }
-
-    public void tick(Level pLevel, BlockPos pPos, BlockState pState, ResourceLocation structure, String name) {
-        if (level == null || level.isClientSide) return;
-
-        long gameTime = level.getGameTime();
-
-        if (!SolarConfigLoader.getInstance().ALLOW_TICK_ACCELERATION && this.lastProcessedGameTime == gameTime) {
-            return;
-        }
-
-        if (getStructure() == null) {
-            setup(structure, name);
-        }
-
-        // this will make it so when the block is tick accelerated, count how much it's tick accelerated then
-        // on the real tick apply a multiplier based on the tick acceleration
-        if (this.lastProcessedGameTime == gameTime) {
-            tickAcceleratedTicks++;
-        } else {
-            if (checkStructureTTL <= 0) {
-                checkStructure(level, pPos);
-                sync();
-                checkStructureTTL = 20; // only check structure every 20 real ticks
-            } else {
-                checkStructureTTL--;
-            }
-
-            if (!foundStructure) {
-                haltReason = HaltReason.STRUCTURE_NOT_FOUND;
-                beforeReturn();
-                return;
-            }
-
-            if (showStructure) {
-                updateShowStructure();
-            }
-
-            canSeeSky = level.canSeeSky(pPos.above());
-
-            if (!canSeeSky) {
-                haltReason = HaltReason.NO_SKY_VIEW;
-                beforeReturn();
-                return;
-            }
-
-            pushEnergyToNeighbors();
-
-            if (isEnergyHandlerFull()) {
-                haltReason = HaltReason.POWER_FULL;
-                beforeReturn();
-                return;
-            }
-
-            long tickMultiplier = tickAcceleratedTicks <= 2 ? tickAcceleratedTicks : (tickAcceleratedTicks - 1) * 2L;
-
-            energyHandler.addLongEnergy(getRFPerTick(getSolarEfficiency()) * tickMultiplier);
-
-            haltReason = HaltReason.NONE;
-
-            sync();
-
-            beforeReturn();
-        }
-    }
-
-    private void beforeReturn() {
-        assert level != null;
-        this.lastProcessedGameTime = level.getGameTime();
-        tickAcceleratedTicks = 1;
-    }
-
-    private void pushEnergyToNeighbors() {
-        if (level == null || level.isClientSide) return;
-        if (energyHandler == null) return;
-
-        long available = energyHandler.getLongEnergyStored();
-        if (available <= 0) return;
-
-        for (Direction dir : exportSide == null ? Direction.values() : new Direction[]{exportSide}) {
-            BlockPos neighborPos = worldPosition.relative(dir);
-            BlockEntity neighbor = level.getBlockEntity(neighborPos);
-            if (neighbor == null) continue;
-
-            IEnergyStorage receiver = level.getCapability(Capabilities.EnergyStorage.BLOCK, neighborPos, dir.getOpposite());
-
-            if (receiver == null) continue;
-
-            long availableNow = energyHandler.getLongEnergyStored();
-            if (availableNow <= 0) break;
-
-            long remaining = energyHandler.getLongEnergyStored();
-            while (remaining > 0) {
-                int toSend = (int) Math.min(remaining, Integer.MAX_VALUE);
-                int accepted = receiver.receiveEnergy(toSend, false);
-                if (accepted <= 0) break;
-                energyHandler.removeLongEnergy(accepted);
-                remaining -= accepted;
-                if (accepted < toSend) break;
-            }
-        }
-    }
-
-    @Override
-    public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider pRegistries) {
-        super.handleUpdateTag(tag, pRegistries);
-        this.loadAdditional(tag, pRegistries);
-    }
-
-    private void sync() {
-        if (level != null) {
-            setChanged(level, getBlockPos(), getBlockState());
-            level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), Block.UPDATE_ALL);
-        }
-    }
-
-    public long getRFPerTick(float efficiency) {
-        SolarConfigLoader cfg = SolarConfigLoader.getInstance();
-
-        long rfPerTick = cfg.SOLAR_CONFIGS.get(name).energyGenerationPerTick();
-
-        rfPerTick *= cachedEfficiencyMod;
-        rfPerTick *= efficiency;
-
-        return rfPerTick;
-    }
-
-    public float getSolarEfficiency() {
-        assert level != null;
-
-        if (SolarConfigLoader.getInstance().isAlwaysDayDimension(level.dimension().location().toString())) {
-            return 1.0f;
-        }
-
-        long timeOfDay = level.getDayTime() % 24000L;
-        float efficiency;
-
-        if (timeOfDay < 5000) {
-            // Linear from 0 to 5000: 0 -> 1.0
-            efficiency = (float) timeOfDay / 5000f;
-        } else if (timeOfDay <= 7000) {
-            // Flat at 1.0 from 5000 to 7000
-            efficiency = 1.0f;
-        } else if (timeOfDay <= 12000) {
-            // Linear from 7000 to 12000: 1.0 -> 0
-            efficiency = 1.0f - ((float) (timeOfDay - 7000) / 5000f);
-        } else {
-            // After 12000, it's night
-            return 0.0f;
-        }
-
-        // Apply weather penalties and modifier protections
-        float weatherPenalty = 1.0f;
-
-        if (level.isRaining()) {
-            weatherPenalty = 0.3f;
-
-            if (level.isThundering()) weatherPenalty = 0.15f;
-
-            weatherPenalty += cachedWeatherResistanceMod;
-
-            if (weatherPenalty > 1.0f) weatherPenalty = 1.0f;
-        }
-
-        efficiency *= weatherPenalty;
-
-        return efficiency;
-    }
-
-    private boolean isEnergyHandlerFull() {
-        if (energyHandler.getLongEnergyStored() == Long.MAX_VALUE) return true;
-
-        return energyHandler.getLongEnergyStored() >= energyHandler.getLongMaxEnergyStored();
-    }
-
-    public void checkStructure(Level pLevel, BlockPos pPos) {
-        foundStructure = false;
-
-        if (structure == null) {
-            return;
-        }
-
-        RegisteredMultiBlockPattern pattern = SolarMultiblocks.MANAGER.getStructure(structure);
-        if (pattern == null) {
-            return;
-        }
-
-        MultiblockMatchResult result = pattern.pattern().matchesWithResult(pLevel, pPos, Rotation.NONE);
-        if (result == null) {
-            result = pattern.pattern().matchesWithResult(pLevel, pPos, Rotation.CLOCKWISE_90);
-        }
-
-        if (result == null) {
-            return;
-        }
-
-        modifierMap.clear();
-        foundStructure = true;
-        result.blocks().stream()
-                .filter(block -> block.getState().getBlock() instanceof ModifierBlock)
-                .forEach(block -> {
-                    SolarConfigLoader.ModifierConfig modifier = SolarConfigLoader.getInstance().getModifierConfig(block.getState().getBlock());
-                    if (!modifierMap.containsKey(block)) {
-                        modifierMap.put(block, modifier);
-                    }
-                });
-
-        calculateCachedModifiers();
-    }
-
-    private void calculateCachedModifiers() {
-        float efficiencyMod = 1f, weatherResistanceMod = 0f;
-        for (SolarConfigLoader.ModifierConfig cfg : modifierMap.values()) {
-            efficiencyMod *= cfg.efficiency();
-            weatherResistanceMod += cfg.weatherResistance() - 1;
-        }
-        cachedEfficiencyMod = efficiencyMod;
-        cachedWeatherResistanceMod = weatherResistanceMod;
-    }
-
-    public SolarEnergyStorage getEnergyStorage() {
-        return energyHandler;
-    }
-
-    public ResourceLocation getStructure() {
-        return structure;
-    }
-
-    public HaltReason getHaltReason() {
-        return haltReason;
-    }
-
-    public float getEfficiencyModifierMultiplier() {
-        return cachedEfficiencyMod;
     }
 
     @Override
@@ -503,7 +242,237 @@ public class SolarControllerBE extends BlockEntity {
 
         exportSide = data.contains("exportSide") ? Direction.byName(data.getString("exportSide")) : null;
 
+        sync();
+    }
+
+    @Override
+    public void onLoad() {
+        super.onLoad();
+        setupEnergyStorage();
+    }
+
+    @Override
+    public CompoundTag getUpdateTag(HolderLookup.Provider pRegistries) {
+        CompoundTag tag = super.getUpdateTag(pRegistries);
+        saveAdditional(tag, pRegistries);
+        return tag;
+    }
+
+    @Nullable
+    @Override
+    public Packet<ClientGamePacketListener> getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
+    }
+
+    public void tick(Level pLevel, BlockPos pPos, BlockState pState, ResourceLocation structure, String name) {
+        if (level == null || level.isClientSide) return;
+
+        long gameTime = level.getGameTime();
+
+        if (!SolarConfigLoader.getInstance().ALLOW_TICK_ACCELERATION) {
+            if (this.lastProcessedGameTime == gameTime) return;
+            this.lastProcessedGameTime = gameTime;
+        }
+
+        if(getStructure() == null) {
+            setup(structure, name);
+        }
+
+        if(this.lastProcessedGameTime != gameTime) {
+            if(checkStructureTTL == 0) {
+                checkStructure(level, pPos);
+                checkStructureTTL = 20; // only check structure every 20 ticks even if tick accelerated
+            }
+            checkStructureTTL--;
+        }
+        sync();
+
+        if (!foundStructure) {
+            haltReason = HaltReason.STRUCTURE_NOT_FOUND;
+            return;
+        }
+
+        if (showStructure) {
+            updateShowStructure();
+        }
+
+        canSeeSky = level.canSeeSky(pPos.above());
+
+        if(!canSeeSky) {
+            haltReason = HaltReason.NO_SKY_VIEW;
+            return;
+        }
+
+        pushEnergyToNeighbors();
+
+        boolean energyFull = isEnergyHandlerFull();
+
+        if (energyFull) {
+            haltReason = HaltReason.POWER_FULL;
+            return;
+        }
+
+        energyHandler.addLongEnergy(getRFPerTick(getSolarEfficiency()));
+
+        haltReason = HaltReason.NONE;
 
         sync();
+    }
+
+    private void pushEnergyToNeighbors() {
+        if (level == null || level.isClientSide) return;
+        if (energyHandler == null) return;
+
+        long available = energyHandler.getLongEnergyStored();
+        if (available <= 0) return;
+
+        for (Direction dir : exportSide == null ? Direction.values() : new Direction[]{exportSide}) {
+            BlockPos neighborPos = worldPosition.relative(dir);
+            BlockEntity neighbor = level.getBlockEntity(neighborPos);
+            if (neighbor == null) continue;
+
+            IEnergyStorage receiver = level.getCapability(Capabilities.EnergyStorage.BLOCK, neighborPos, dir.getOpposite());
+
+            if (receiver == null) continue;
+
+            long availableNow = energyHandler.getLongEnergyStored();
+            if (availableNow <= 0) break;
+
+            long remaining = energyHandler.getLongEnergyStored();
+            while (remaining > 0) {
+                int toSend = (int) Math.min(remaining, Integer.MAX_VALUE);
+                int accepted = receiver.receiveEnergy(toSend, false);
+                if (accepted <= 0) break;
+                energyHandler.removeLongEnergy(accepted);
+                remaining -= accepted;
+                if (accepted < toSend) break;
+            }
+        }
+    }
+
+    @Override
+    public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider pRegistries) {
+        super.handleUpdateTag(tag, pRegistries);
+        this.loadAdditional(tag, pRegistries);
+    }
+
+    public SolarEnergyStorage getEnergyStorage() {
+        return energyHandler;
+    }
+
+    private void sync() {
+        if(level != null) {
+            setChanged(level, getBlockPos(), getBlockState());
+            level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), Block.UPDATE_ALL);
+        }
+    }
+
+    public long getRFPerTick(float efficiency) {
+        SolarConfigLoader cfg = SolarConfigLoader.getInstance();
+
+        long rfPerTick = cfg.SOLAR_CONFIGS.get(name).energyGenerationPerTick();
+
+        float efficiencyModifier = 1.0f;
+
+        for (Map.Entry<BlockInWorld, SolarConfigLoader.ModifierConfig> entry : modifierMap.entrySet()) {
+            efficiencyModifier *= entry.getValue().efficiency();
+        }
+
+        rfPerTick *= efficiencyModifier;
+
+        rfPerTick *= efficiency;
+
+        return rfPerTick;
+    }
+
+    public float getSolarEfficiency() {
+        assert level != null;
+
+        if (SolarConfigLoader.getInstance().isAlwaysDayDimension(level.dimension().location().toString())) {
+            return 1.0f;
+        }
+
+        long timeOfDay = level.getDayTime() % 24000L;
+        float efficiency;
+
+        if (timeOfDay < 5000) {
+            // Linear from 0 to 5000: 0 -> 1.0
+            efficiency = (float) timeOfDay / 5000f;
+        } else if (timeOfDay <= 7000) {
+            // Flat at 1.0 from 5000 to 7000
+            efficiency = 1.0f;
+        } else if (timeOfDay <= 12000) {
+            // Linear from 7000 to 12000: 1.0 -> 0
+            efficiency = 1.0f - ((float) (timeOfDay - 7000) / 5000f);
+        } else {
+            // After 12000, it's night
+            return 0.0f;
+        }
+
+        // Apply weather penalties and modifier protections
+        float weatherPenalty = 1.0f;
+
+        if (level.isRaining()) {
+            weatherPenalty = 0.3f;
+
+            if (level.isThundering()) weatherPenalty = 0.15f;
+
+            for (Map.Entry<BlockInWorld, SolarConfigLoader.ModifierConfig> entry : modifierMap.entrySet()) {
+                weatherPenalty += entry.getValue().weatherResistance() - 1;
+            }
+
+            if(weatherPenalty > 1.0f) weatherPenalty = 1.0f;
+        }
+
+        efficiency *= weatherPenalty;
+
+        return efficiency;
+    }
+
+    private boolean isEnergyHandlerFull() {
+        if (energyHandler.getLongEnergyStored() == Long.MAX_VALUE) return true;
+
+        return energyHandler.getLongEnergyStored() >= energyHandler.getLongMaxEnergyStored();
+    }
+
+    public void checkStructure(Level pLevel, BlockPos pPos) {
+        foundStructure = false;
+
+        if (structure == null) {
+            return;
+        }
+
+        RegisteredMultiBlockPattern pattern = SolarMultiblocks.MANAGER.getStructure(structure);
+        if (pattern == null) {
+            return;
+        }
+
+        MultiblockMatchResult result = pattern.pattern().matchesWithResult(pLevel, pPos, Rotation.NONE);
+        if (result == null) {
+            result = pattern.pattern().matchesWithResult(pLevel, pPos, Rotation.CLOCKWISE_90);
+        }
+
+        if (result == null) {
+            return;
+        }
+
+        modifierMap.clear();
+        foundStructure = true;
+        result.blocks().stream()
+                .filter(block -> block.getState().getBlock() instanceof ModifierBlock)
+                .forEach(block -> {
+                    SolarConfigLoader.ModifierConfig modifier = SolarConfigLoader.getInstance().getModifierConfig(block.getState().getBlock());
+                    if (!modifierMap.containsKey(block)) {
+                        modifierMap.put(block, modifier);
+                    }
+                });
+    }
+
+    public ResourceLocation getStructure() {
+        return structure;
+    }
+
+    public HaltReason getHaltReason() {
+        return haltReason;
     }
 }

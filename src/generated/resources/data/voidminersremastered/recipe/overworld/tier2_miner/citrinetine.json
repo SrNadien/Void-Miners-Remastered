@@ -1,11 +1,10 @@
 {
   "type": "voidminersremastered:miner",
-  "allowHigherTiers": false,
   "dimension": "minecraft:overworld",
   "minTier": 2,
   "output": {
     "stack": {
-      "count": 9,
+      "count": 1,
       "id": "voidminersremastered:citrinetine"
     },
     "weight": 16.0

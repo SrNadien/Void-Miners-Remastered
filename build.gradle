@@ -110,6 +110,8 @@ dependencies {
     runtimeOnly "curse.maven:architectury-api-419699:8492726"
     runtimeOnly "curse.maven:geckolib-388172:8893490"
     runtimeOnly "curse.maven:fusion-connected-textures-854949:8822088"
+    runtimeOnly "curse.maven:ultimate-transport-system-1679844:8870338"
+    runtimeOnly "curse.maven:patchouli-306770:7730942"
 }
 
 tasks.withType(ProcessResources).configureEach {
@@ -128,6 +130,7 @@ tasks.withType(ProcessResources).configureEach {
         mod_description: mod_description,
         kubejs_version: kubejs_version,
         mangomultiblock_version_id: mangomultiblock_version_id,
+        mangomultiblock_version: mangomultiblock_version,
     ]
 
     inputs.properties replaceProperties

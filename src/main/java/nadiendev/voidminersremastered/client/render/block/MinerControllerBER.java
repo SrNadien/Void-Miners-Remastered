@@ -36,7 +36,7 @@ public class MinerControllerBER implements BlockEntityRenderer<MinerControllerBE
             pose.translate(0.5f, 0, 0.5f);
             pose.mulPose(Axis.YP.rotationDegrees(f * 2.25f - 45f));
 
-            renderBeam(pBuffer.getBuffer(RenderType.gui()), pose, new Vector3f(0f, 0f, 0f), pBlockEntity.getBeamColor(), pBlockEntity.beamLength, 0.3f);
+            renderBeam(pBuffer.getBuffer(RenderType.gui()), pose, new Vector3f(0f, 0f, 0f), pBlockEntity.getBeamColor(), 320, 0.3f);
 
             pose.popPose();
             return;

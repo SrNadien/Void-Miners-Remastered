@@ -26,6 +26,7 @@ public class VoidMinersRemastered {
         CrystalSet.initSets();
         SolarSet.initSets();
 
+        ModItems.registerAliases();
         ModItems.ITEMS.register(modEventBus);
         ModBlocks.BLOCKS.register(modEventBus);
         ModCreativeTabs.CREATIVE_MODE_TABS.register(modEventBus);

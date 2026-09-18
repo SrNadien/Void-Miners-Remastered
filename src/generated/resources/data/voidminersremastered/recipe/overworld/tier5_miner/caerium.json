@@ -1,11 +1,10 @@
 {
   "type": "voidminersremastered:miner",
-  "allowHigherTiers": false,
   "dimension": "minecraft:overworld",
   "minTier": 5,
   "output": {
     "stack": {
-      "count": 19,
+      "count": 1,
       "id": "voidminersremastered:caerium"
     },
     "weight": 16.0

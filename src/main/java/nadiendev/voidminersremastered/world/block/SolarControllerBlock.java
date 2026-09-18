@@ -7,10 +7,13 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.TooltipFlag;
 import nadiendev.voidminersremastered.config.SolarConfigLoader;
 import nadiendev.voidminersremastered.init.ModItems;
+import nadiendev.voidminersremastered.init.ModItems;
 import nadiendev.voidminersremastered.util.ColorUtil;
 import nadiendev.voidminersremastered.world.block.entity.SolarControllerBE;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionResult;
@@ -43,6 +46,24 @@ public class SolarControllerBlock extends ColoredBlock implements EntityBlock {
     @Override
     public BlockEntity newBlockEntity(@NotNull BlockPos blockPos, @NotNull BlockState blockState) {
         return new SolarControllerBE(blockPos, blockState);
+    }
+
+    @Override
+    protected ItemInteractionResult useItemOn(ItemStack pStack, BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand pHand, BlockHitResult pHitResult) {
+        if (pLevel.isClientSide) {
+            return ItemInteractionResult.sidedSuccess(true);
+        }
+
+        if (pStack.is(ModItems.FACE_CONFIGURATOR.get()) && pLevel.getBlockEntity(pPos) instanceof SolarControllerBE blockEntity) {
+            Direction side = blockEntity.toggleExportSide(pHitResult.getDirection());
+            pPlayer.displayClientMessage(side == null
+                    ? Component.translatable("client_message.voidminers.export.all_sides")
+                    : Component.translatable("client_message.voidminers.export.enabled",
+                            Component.translatable("tooltip.voidminers.controller.export.side." + side.getName())), true);
+            return ItemInteractionResult.CONSUME;
+        }
+
+        return super.useItemOn(pStack, pState, pLevel, pPos, pPlayer, pHand, pHitResult);
     }
 
     @Override
