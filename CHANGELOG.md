@@ -17,6 +17,14 @@
 - New texture for the Ultimate Stellar Core.
 - Requires Mango's Multiblock Library Revived **4.0.1** or newer.
 
+## Removed
+
+- Recipes can no longer require a block under the Miner Controller (`blockUnderneath`).
+- Miners no longer stop when a block sits between the controller and the glass panels.
+- The laser no longer stops at the block it hits; it is back to its fixed length.
+- JEI no longer shows percentages with SHIFT or full values with CTRL; it shows the weight again.
+- The tick acceleration handling and the decimal part of item multipliers are back to how they were.
+
 ## Fixed
 
 - The required library version range was written as a CurseForge file id instead of a version.
