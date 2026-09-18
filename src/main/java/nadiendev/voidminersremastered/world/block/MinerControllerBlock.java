@@ -2,6 +2,7 @@ package nadiendev.voidminersremastered.world.block;
 
 import nadiendev.voidminersremastered.config.MinerConfigLoader;
 import nadiendev.voidminersremastered.init.ModDataComponents;
+import nadiendev.voidminersremastered.init.ModItems;
 import nadiendev.voidminersremastered.util.EnergyFormatUtil;
 import nadiendev.voidminersremastered.util.CustomColorUtil;
 import nadiendev.voidminersremastered.world.block.entity.MinerControllerBE;
@@ -105,6 +106,15 @@ public class MinerControllerBlock extends ColoredBlock implements EntityBlock {
 
         if (pLevel.isClientSide()) {
             return InteractionResult.SUCCESS;
+        }
+
+        if (pStack.is(ModItems.FACE_CONFIGURATOR.get()) && blockEntity != null) {
+            Direction side = blockEntity.toggleExportSide(pHitResult.getDirection());
+            message(pPlayer, side == null
+                    ? Component.translatable("client_message.voidminersremastered.export.disabled")
+                    : Component.translatable("client_message.voidminersremastered.export.enabled",
+                            Component.translatable("tooltip.voidminersremastered.controller.export.side." + side.getName())), true);
+            return InteractionResult.CONSUME;
         }
 
         if(pStack.getItem().components().get(ModDataComponents.MAX_STORAGE_UPGRADE_SLOTS.get()) != null) {

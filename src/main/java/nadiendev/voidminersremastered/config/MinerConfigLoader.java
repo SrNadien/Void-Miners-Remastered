@@ -52,6 +52,20 @@ public class MinerConfigLoader {
     public int EXPORT_INTERVAL_TICKS = 10;
 
     @Expose
+    public boolean GEM_OUTPUT_PER_TIER_ENABLED = false;
+
+    @Expose
+    public List<Integer> GEM_OUTPUT_PER_TIER = new ArrayList<>(List.of(8, 9, 12, 15, 19, 34, 40, 55, 64));
+
+    public int getGemOutput(int tier) {
+        if (!GEM_OUTPUT_PER_TIER_ENABLED || GEM_OUTPUT_PER_TIER == null || GEM_OUTPUT_PER_TIER.isEmpty() || tier < 1) {
+            return 1;
+        }
+        int index = Math.min(tier, GEM_OUTPUT_PER_TIER.size()) - 1;
+        return Math.max(1, GEM_OUTPUT_PER_TIER.get(index));
+    }
+
+    @Expose
     public Map<String, Config> MINER_CONFIGS = MapUtil.of(
             MapUtil.createEntry("rubetine", new Config(10000000, 1000, 300,
                     MapUtil.of(

@@ -27,7 +27,6 @@ import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 public class MinerRecipe implements Recipe<RecipeInput> {
@@ -44,25 +43,13 @@ public class MinerRecipe implements Recipe<RecipeInput> {
     private final int minTier;
     private final boolean allowHigherTiers;
     private final ResourceKey<Level> dimension;
-    @Nullable
-    private final BlockRequirement blockUnderneath;
     private Identifier id;
 
     public MinerRecipe(WeightedStack output, int minTier, boolean allowHigherTiers, ResourceKey<Level> dimension) {
-        this(output, minTier, allowHigherTiers, dimension, null);
-    }
-
-    public MinerRecipe(WeightedStack output, int minTier, boolean allowHigherTiers, ResourceKey<Level> dimension, @Nullable BlockRequirement blockUnderneath) {
         this.output = output;
         this.minTier = minTier;
         this.allowHigherTiers = allowHigherTiers;
         this.dimension = dimension;
-        this.blockUnderneath = blockUnderneath;
-    }
-
-    @Nullable
-    public BlockRequirement blockUnderneath() {
-        return blockUnderneath;
     }
 
     public void setId(Identifier id) {
@@ -168,21 +155,13 @@ public class MinerRecipe implements Recipe<RecipeInput> {
         private Type() {}
     }
 
-    private static final String NO_BLOCK_UNDERNEATH = "none";
-
-    private static final Codec<BlockRequirement> BLOCK_REQUIREMENT_CODEC =
-            Codec.STRING.xmap(BlockRequirement::parse, BlockRequirement::raw);
-
     private static final MapCodec<MinerRecipe> CODEC = RecordCodecBuilder.mapCodec(instance ->
             instance.group(
                     WeightedStack.CODEC.fieldOf("output").forGetter(recipe -> recipe.output),
                     Codec.INT.fieldOf("minTier").forGetter(recipe -> recipe.minTier),
                     Codec.BOOL.optionalFieldOf("allowHigherTiers", true).forGetter(recipe -> recipe.allowHigherTiers),
-                    ResourceKey.codec(Registries.DIMENSION).fieldOf("dimension").forGetter(recipe -> recipe.dimension),
-                    BLOCK_REQUIREMENT_CODEC.optionalFieldOf("blockUnderneath")
-                            .forGetter(recipe -> Optional.ofNullable(recipe.blockUnderneath))
-            ).apply(instance, (output, minTier, allowHigherTiers, dimension, blockUnderneath) ->
-                    new MinerRecipe(output, minTier, allowHigherTiers, dimension, blockUnderneath.orElse(null)))
+                    ResourceKey.codec(Registries.DIMENSION).fieldOf("dimension").forGetter(recipe -> recipe.dimension)
+            ).apply(instance, MinerRecipe::new)
     );
 
     private static final MapCodec<MinerRecipe> KUBEJS_CODEC = RecordCodecBuilder.mapCodec(instance ->
@@ -192,16 +171,11 @@ public class MinerRecipe implements Recipe<RecipeInput> {
                     Codec.DOUBLE.optionalFieldOf("weight", 1.0).forGetter(recipe -> (double) recipe.output.weight),
                     Codec.INT.fieldOf("minTier").forGetter(recipe -> recipe.minTier),
                     Codec.BOOL.optionalFieldOf("allowHigherTiers", true).forGetter(recipe -> recipe.allowHigherTiers),
-                    ResourceKey.codec(Registries.DIMENSION).optionalFieldOf("dimension", Level.OVERWORLD).forGetter(recipe -> recipe.dimension),
-                    Codec.STRING.optionalFieldOf("blockUnderneath", NO_BLOCK_UNDERNEATH)
-                            .forGetter(recipe -> recipe.blockUnderneath == null ? NO_BLOCK_UNDERNEATH : recipe.blockUnderneath.raw())
-            ).apply(instance, (item, count, weight, minTier, allowHigher, dim, blockUnderneathRaw) -> {
+                    ResourceKey.codec(Registries.DIMENSION).optionalFieldOf("dimension", Level.OVERWORLD).forGetter(recipe -> recipe.dimension)
+            ).apply(instance, (item, count, weight, minTier, allowHigher, dim) -> {
                 ItemStack stack = item.copy();
                 stack.setCount(count);
-                BlockRequirement blockUnderneath = blockUnderneathRaw == null || blockUnderneathRaw.isEmpty() || blockUnderneathRaw.equals(NO_BLOCK_UNDERNEATH)
-                        ? null
-                        : BlockRequirement.parse(blockUnderneathRaw);
-                return new MinerRecipe(new WeightedStack(stack, weight.floatValue()), minTier, allowHigher, dim, blockUnderneath);
+                return new MinerRecipe(new WeightedStack(stack, weight.floatValue()), minTier, allowHigher, dim);
             })
     );
 
@@ -243,9 +217,8 @@ public class MinerRecipe implements Recipe<RecipeInput> {
         int minTier = buffer.readInt();
         boolean allowHigherTiers = buffer.readBoolean();
         ResourceKey<Level> dimension = buffer.readResourceKey(Registries.DIMENSION);
-        BlockRequirement blockUnderneath = buffer.readBoolean() ? BlockRequirement.parse(buffer.readUtf()) : null;
 
-        return new MinerRecipe(output, minTier, allowHigherTiers, dimension, blockUnderneath);
+        return new MinerRecipe(output, minTier, allowHigherTiers, dimension);
     }
 
     private static void toNetwork(RegistryFriendlyByteBuf buffer, MinerRecipe recipe) {
@@ -253,10 +226,6 @@ public class MinerRecipe implements Recipe<RecipeInput> {
         buffer.writeInt(recipe.minTier);
         buffer.writeBoolean(recipe.allowHigherTiers);
         buffer.writeResourceKey(recipe.dimension);
-        buffer.writeBoolean(recipe.blockUnderneath != null);
-        if (recipe.blockUnderneath != null) {
-            buffer.writeUtf(recipe.blockUnderneath.raw());
-        }
     }
 
     public static class Builder implements RecipeBuilder {
@@ -265,8 +234,6 @@ public class MinerRecipe implements Recipe<RecipeInput> {
         private final boolean allowHigherTiers;
         private final Identifier id;
         private final ResourceKey<Level> dimension;
-        @Nullable
-        private BlockRequirement blockUnderneath;
 
         private Builder(WeightedStack output, int minTier, boolean allowHigherTiers, Identifier id, ResourceKey<Level> dimension) {
             this.output = output;
@@ -290,22 +257,9 @@ public class MinerRecipe implements Recipe<RecipeInput> {
                     .identifier();
             Identifier recipeId = Identifier.fromNamespaceAndPath(
                     VoidMinersRemastered.MODID,
-                    dimension.identifier().getPath() + "/tier" + minTier + "_miner/" + recipePath(itemId)
+                    dimension.identifier().getPath() + "/tier" + minTier + "_miner/" + itemId.getPath()
             );
             return new Builder(output, minTier, allowHigherTiers, recipeId, dimension);
-        }
-
-        private static String recipePath(Identifier itemId) {
-            String namespace = itemId.getNamespace();
-            if (namespace.equals("minecraft") || namespace.equals(VoidMinersRemastered.MODID)) {
-                return itemId.getPath();
-            }
-            return namespace + "/" + itemId.getPath();
-        }
-
-        public Builder blockUnderneath(String blockIdOrTag) {
-            this.blockUnderneath = BlockRequirement.parse(blockIdOrTag);
-            return this;
         }
 
         @Override
@@ -329,7 +283,7 @@ public class MinerRecipe implements Recipe<RecipeInput> {
 
         @Override
         public void save(RecipeOutput pRecipeOutput, ResourceKey<Recipe<?>> pId) {
-            MinerRecipe recipe = new MinerRecipe(this.output, this.minTier, this.allowHigherTiers, this.dimension, this.blockUnderneath);
+            MinerRecipe recipe = new MinerRecipe(this.output, this.minTier, this.allowHigherTiers, this.dimension);
             pRecipeOutput.accept(pId, recipe, null);
         }
     }

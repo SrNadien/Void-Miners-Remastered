@@ -61,17 +61,12 @@ public class SolarControllerBE extends BlockEntity {
 
     public boolean canSeeSky = false;
 
-    @Nullable
-    private Direction exportSide = null;
-
-    private int tickAcceleratedTicks = 1;
-
-    private float cachedEfficiencyMod = 1f;
-    private float cachedWeatherResistanceMod = 0f;
-
     private HaltReason haltReason = HaltReason.NONE;
 
     private int checkStructureTTL = 0;
+
+    @Nullable
+    private Direction exportSide = null;
 
     public SolarControllerBE(BlockPos pPos, BlockState pBlockState) {
         super(ModBlockEntities.SOLAR_BASE_BE.get(), pPos, pBlockState);
@@ -273,30 +268,26 @@ public class SolarControllerBE extends BlockEntity {
 
         long gameTime = level.getGameTime();
 
-        if (!SolarConfigLoader.getInstance().ALLOW_TICK_ACCELERATION && this.lastProcessedGameTime == gameTime) {
-            return;
+        if (!SolarConfigLoader.getInstance().ALLOW_TICK_ACCELERATION) {
+            if (this.lastProcessedGameTime == gameTime) return;
+            this.lastProcessedGameTime = gameTime;
         }
 
-        if (getStructure() == null) {
+        if(getStructure() == null) {
             setup(structure, name);
         }
 
-        if (this.lastProcessedGameTime == gameTime) {
-            tickAcceleratedTicks++;
-            return;
-        }
-
-        if (checkStructureTTL <= 0) {
-            checkStructure(level, pPos);
-            sync();
-            checkStructureTTL = 20;
-        } else {
+        if(this.lastProcessedGameTime != gameTime) {
+            if(checkStructureTTL == 0) {
+                checkStructure(level, pPos);
+                checkStructureTTL = 20; // only check structure every 20 ticks even if tick accelerated
+            }
             checkStructureTTL--;
         }
+        sync();
 
         if (!foundStructure) {
             haltReason = HaltReason.STRUCTURE_NOT_FOUND;
-            beforeReturn();
             return;
         }
 
@@ -304,41 +295,27 @@ public class SolarControllerBE extends BlockEntity {
             updateShowStructure();
         }
 
-        boolean skyView = level.canSeeSky(pPos.above());
-        if (skyView != canSeeSky) {
-            canSeeSky = skyView;
-            sync();
-        }
+        canSeeSky = level.canSeeSky(pPos.above());
 
-        if (!canSeeSky) {
+        if(!canSeeSky) {
             haltReason = HaltReason.NO_SKY_VIEW;
-            beforeReturn();
             return;
         }
 
         pushEnergyToNeighbors();
 
-        if (isEnergyHandlerFull()) {
+        boolean energyFull = isEnergyHandlerFull();
+
+        if (energyFull) {
             haltReason = HaltReason.POWER_FULL;
-            beforeReturn();
             return;
         }
 
-        long tickMultiplier = tickAcceleratedTicks <= 2 ? tickAcceleratedTicks : (tickAcceleratedTicks - 1) * 2L;
-
-        energyHandler.addLongEnergy(getRFPerTick(getSolarEfficiency()) * tickMultiplier);
+        energyHandler.addLongEnergy(getRFPerTick(getSolarEfficiency()));
 
         haltReason = HaltReason.NONE;
 
         sync();
-        beforeReturn();
-    }
-
-    private void beforeReturn() {
-        if (level != null) {
-            this.lastProcessedGameTime = level.getGameTime();
-        }
-        tickAcceleratedTicks = 1;
     }
 
     private void pushEnergyToNeighbors() {
@@ -389,16 +366,19 @@ public class SolarControllerBE extends BlockEntity {
     public long getRFPerTick(float efficiency) {
         SolarConfigLoader cfg = SolarConfigLoader.getInstance();
 
-        long rfPerTick = cfg.getConfig(name).energyGenerationPerTick();
+        long rfPerTick = cfg.SOLAR_CONFIGS.get(name).energyGenerationPerTick();
 
-        rfPerTick *= cachedEfficiencyMod;
+        float efficiencyModifier = 1.0f;
+
+        for (Map.Entry<BlockInWorld, SolarConfigLoader.ModifierConfig> entry : modifierMap.entrySet()) {
+            efficiencyModifier *= entry.getValue().efficiency();
+        }
+
+        rfPerTick *= efficiencyModifier;
+
         rfPerTick *= efficiency;
 
         return rfPerTick;
-    }
-
-    public float getEfficiencyModifierMultiplier() {
-        return cachedEfficiencyMod;
     }
 
     public float getSolarEfficiency() {
@@ -433,7 +413,9 @@ public class SolarControllerBE extends BlockEntity {
 
             if (level.isThundering()) weatherPenalty = 0.15f;
 
-            weatherPenalty += cachedWeatherResistanceMod;
+            for (Map.Entry<BlockInWorld, SolarConfigLoader.ModifierConfig> entry : modifierMap.entrySet()) {
+                weatherPenalty += entry.getValue().weatherResistance() - 1;
+            }
 
             if(weatherPenalty > 1.0f) weatherPenalty = 1.0f;
         }
@@ -476,20 +458,10 @@ public class SolarControllerBE extends BlockEntity {
                 .filter(block -> block.getState().getBlock() instanceof ModifierBlock)
                 .forEach(block -> {
                     SolarConfigLoader.ModifierConfig modifier = SolarConfigLoader.getInstance().getModifierConfig(block.getState().getBlock());
-                    modifierMap.putIfAbsent(block, modifier);
+                    if (!modifierMap.containsKey(block)) {
+                        modifierMap.put(block, modifier);
+                    }
                 });
-
-        calculateCachedModifiers();
-    }
-
-    private void calculateCachedModifiers() {
-        float efficiencyMod = 1f, weatherResistanceMod = 0f;
-        for (SolarConfigLoader.ModifierConfig cfg : modifierMap.values()) {
-            efficiencyMod *= cfg.efficiency();
-            weatherResistanceMod += cfg.weatherResistance() - 1;
-        }
-        cachedEfficiencyMod = efficiencyMod;
-        cachedWeatherResistanceMod = weatherResistanceMod;
     }
 
     public Identifier getStructure() {

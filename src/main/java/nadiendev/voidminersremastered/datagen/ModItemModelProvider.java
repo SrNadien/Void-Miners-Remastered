@@ -57,10 +57,11 @@ public class ModItemModelProvider extends ModelProvider {
     protected void registerModels(BlockModelGenerators blockModels, ItemModelGenerators itemModels) {
         simpleItem(itemModels, ModItems.STRUCTURE_BUILDER);
         simpleItem(itemModels, ModItems.ULTIMATE_STELLAR_CORE);
+        simpleItem(itemModels, ModItems.FACE_CONFIGURATOR);
 
-        simpleItem(itemModels, ModItems.MAX_STORAGE_UPGRADE_T1);
-        simpleItem(itemModels, ModItems.MAX_STORAGE_UPGRADE_T2);
-        simpleItem(itemModels, ModItems.MAX_STORAGE_UPGRADE_T3);
+        simpleItem(itemModels, ModItems.STORAGE_UPGRADE_MK1);
+        simpleItem(itemModels, ModItems.STORAGE_UPGRADE_MK2);
+        simpleItem(itemModels, ModItems.STORAGE_UPGRADE_MK3);
 
         for (CrystalSet set : CrystalSet.sets()) {
             if (set.CRYSTAL != null) {

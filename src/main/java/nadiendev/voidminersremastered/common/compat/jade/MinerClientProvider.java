@@ -63,7 +63,6 @@ public enum MinerClientProvider implements IBlockComponentProvider {
                     case STRUCTURE_NOT_FOUND -> reason = Component.translatable("jade.voidminersremastered.halt_reason.structure_not_found");
                     case TOO_MUCH_ITEM_MULTIPLIER -> reason = Component.translatable("jade.voidminersremastered.halt_reason.too_much_item_multiplier");
                     case NOT_ENOUGH_EMPTY_SLOTS -> reason = Component.translatable("jade.voidminersremastered.halt_reason.not_enough_empty_slots");
-                    case BLOCK_BEFORE_GLASS -> reason = Component.translatable("jade.voidminersremastered.halt_reason.block_before_glass");
                     case NO_BEDROCK_OR_VOID_VIEW -> reason = Component.translatable("jade.voidminersremastered.halt_reason.no_bedrock_or_void_view");
                     case NOT_ENOUGH_POWER -> reason = Component.translatable("jade.voidminersremastered.halt_reason.not_enough_power");
                     default -> reason = Component.translatable("jade.voidminersremastered.halt_reason.halt_reason_not_found");

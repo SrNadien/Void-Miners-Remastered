@@ -117,6 +117,15 @@ public class CrystalSet {
         );
     }
 
+    public static boolean isGem(net.minecraft.world.item.Item item) {
+        for (CrystalSet set : sets()) {
+            if (set.CRYSTAL != null && set.CRYSTAL.get() == item) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public static List<CrystalSet> sets() {
         List<CrystalSet> sets = new ArrayList<>();
         sets.add(RUBETINE);

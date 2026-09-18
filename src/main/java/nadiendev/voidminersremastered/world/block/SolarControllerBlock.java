@@ -1,12 +1,14 @@
 package nadiendev.voidminersremastered.world.block;
 
 import nadiendev.voidminersremastered.config.SolarConfigLoader;
+import nadiendev.voidminersremastered.init.ModItems;
 import nadiendev.voidminersremastered.util.CustomColorUtil;
 import nadiendev.voidminersremastered.util.EnergyFormatUtil;
 import nadiendev.voidminersremastered.world.block.entity.SolarControllerBE;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
@@ -49,6 +51,26 @@ public class SolarControllerBlock extends ColoredBlock implements EntityBlock {
     @Override
     public BlockEntity newBlockEntity(@NotNull BlockPos blockPos, @NotNull BlockState blockState) {
         return new SolarControllerBE(blockPos, blockState);
+    }
+
+    @Override
+    protected InteractionResult useItemOn(ItemStack pStack, BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand pHand, BlockHitResult pHitResult) {
+        if (pLevel.isClientSide()) {
+            return InteractionResult.SUCCESS;
+        }
+
+        if (pStack.is(ModItems.FACE_CONFIGURATOR.get()) && pLevel.getBlockEntity(pPos) instanceof SolarControllerBE blockEntity) {
+            Direction side = blockEntity.toggleExportSide(pHitResult.getDirection());
+            if (pPlayer instanceof ServerPlayer serverPlayer) {
+                serverPlayer.sendSystemMessage(side == null
+                        ? Component.translatable("client_message.voidminersremastered.export.all_sides")
+                        : Component.translatable("client_message.voidminersremastered.export.enabled",
+                                Component.translatable("tooltip.voidminersremastered.controller.export.side." + side.getName())), true);
+            }
+            return InteractionResult.CONSUME;
+        }
+
+        return super.useItemOn(pStack, pState, pLevel, pPos, pPlayer, pHand, pHitResult);
     }
 
     @Override

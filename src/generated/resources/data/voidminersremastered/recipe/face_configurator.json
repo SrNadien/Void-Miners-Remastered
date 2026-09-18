@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": "minecraft:iron_ingot",
+    "R": "minecraft:redstone"
+  },
+  "pattern": [
+    "  I",
+    " R ",
+    "I  "
+  ],
+  "result": {
+    "id": "voidminersremastered:face_configurator"
+  }
+}

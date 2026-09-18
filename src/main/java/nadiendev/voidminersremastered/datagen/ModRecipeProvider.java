@@ -13,7 +13,6 @@ import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.*;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.Level;
@@ -29,14 +28,6 @@ public class ModRecipeProvider extends RecipeProvider {
     private static final float GEM_WEIGHT_OVERWORLD = 16f;
     private static final float GEM_WEIGHT_NETHER = 12f;
     private static final float GEM_WEIGHT_MINING = 16f;
-
-    private static final int[] GEM_OUTPUT_PER_TIER = {8, 9, 12, 15, 19, 34, 40, 55, 64};
-
-    private static void saveGem(CrystalSet set, int tier, float weight, ResourceKey<Level> dimension, RecipeOutput output) {
-        MinerRecipe.Builder.builder(
-                new WeightedStack(new ItemStackTemplate(set.CRYSTAL.get(), GEM_OUTPUT_PER_TIER[tier - 1]), weight), tier, false, dimension
-        ).save(output);
-    }
 
     protected ModRecipeProvider(HolderLookup.Provider registries, RecipeOutput output) {
         super(registries, output);
@@ -556,13 +547,11 @@ public class ModRecipeProvider extends RecipeProvider {
                 continue;
             }
 
-            int gemTier = Math.max(1, i);
+            int tier = Math.max(1, i);
 
-            for (int tier = gemTier; tier <= GEM_OUTPUT_PER_TIER.length; tier++) {
-                saveGem(set, tier, GEM_WEIGHT_OVERWORLD, Level.OVERWORLD, this.output);
-                saveGem(set, tier, GEM_WEIGHT_NETHER, Level.NETHER, this.output);
-                saveGem(set, tier, GEM_WEIGHT_MINING, MINING, miningOutput);
-            }
+            MinerRecipe.Builder.builder(new WeightedStack(set.CRYSTAL.get(), GEM_WEIGHT_OVERWORLD), tier, Level.OVERWORLD).save(this.output);
+            MinerRecipe.Builder.builder(new WeightedStack(set.CRYSTAL.get(), GEM_WEIGHT_NETHER), tier, Level.NETHER).save(this.output);
+            MinerRecipe.Builder.builder(new WeightedStack(set.CRYSTAL.get(), GEM_WEIGHT_MINING), tier, MINING).save(miningOutput);
         }
 
         MinerRecipe.Builder.builder(
@@ -576,7 +565,20 @@ public class ModRecipeProvider extends RecipeProvider {
 
         this.shaped(
                         RecipeCategory.MISC,
-                        ModItems.MAX_STORAGE_UPGRADE_T1.get(),
+                        ModItems.FACE_CONFIGURATOR.get(),
+                        1
+                )
+                .pattern("  I")
+                .pattern(" R ")
+                .pattern("I  ")
+                .define('I', Items.IRON_INGOT)
+                .define('R', Items.REDSTONE)
+                .unlockedBy("hasItem", this.has(Items.IRON_INGOT))
+                .save(this.output);
+
+        this.shaped(
+                        RecipeCategory.MISC,
+                        ModItems.STORAGE_UPGRADE_MK1.get(),
                         1
                 )
                 .pattern("GGG")
@@ -589,30 +591,30 @@ public class ModRecipeProvider extends RecipeProvider {
 
         this.shaped(
                         RecipeCategory.MISC,
-                        ModItems.MAX_STORAGE_UPGRADE_T2.get(),
+                        ModItems.STORAGE_UPGRADE_MK2.get(),
                         1
                 )
                 .pattern("CTC")
                 .pattern("TST")
                 .pattern("CCC")
                 .define('S', Items.NETHERITE_BLOCK)
-                .define('T', ModItems.MAX_STORAGE_UPGRADE_T1.get())
+                .define('T', ModItems.STORAGE_UPGRADE_MK1.get())
                 .define('C', CrystalSet.CAERIUM.CRYSTAL.get())
-                .unlockedBy("hasItem", this.has(ModItems.MAX_STORAGE_UPGRADE_T1.get()))
+                .unlockedBy("hasItem", this.has(ModItems.STORAGE_UPGRADE_MK1.get()))
                 .save(this.output);
 
         this.shaped(
                         RecipeCategory.MISC,
-                        ModItems.MAX_STORAGE_UPGRADE_T3.get(),
+                        ModItems.STORAGE_UPGRADE_MK3.get(),
                         1
                 )
                 .pattern("CTC")
                 .pattern("TST")
                 .pattern("CCC")
                 .define('S', Items.NETHER_STAR)
-                .define('T', ModItems.MAX_STORAGE_UPGRADE_T2.get())
+                .define('T', ModItems.STORAGE_UPGRADE_MK2.get())
                 .define('C', ModItems.ULTIMATE_STELLAR_CORE.get())
-                .unlockedBy("hasItem", this.has(ModItems.MAX_STORAGE_UPGRADE_T2.get()))
+                .unlockedBy("hasItem", this.has(ModItems.STORAGE_UPGRADE_MK2.get()))
                 .save(this.output);
 
 
