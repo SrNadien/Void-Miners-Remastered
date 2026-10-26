@@ -1,0 +1,24 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "thaumaturge"
+    }
+  ],
+  "type": "voidminersremastered:miner",
+  "dimension": "minecraft:overworld",
+  "minTier": 2,
+  "output": {
+    "stack": {
+      "components": {
+        "thaumaturge:crystal_aspect": {
+          "amount": 1,
+          "aspect": "thaumaturge:ordo"
+        }
+      },
+      "count": 1,
+      "id": "thaumaturge:essentia_crystal"
+    },
+    "weight": 3.0
+  }
+}

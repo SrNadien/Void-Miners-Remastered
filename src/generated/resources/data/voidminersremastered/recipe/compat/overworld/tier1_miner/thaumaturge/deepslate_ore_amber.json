@@ -1,0 +1,18 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "thaumaturge"
+    }
+  ],
+  "type": "voidminersremastered:miner",
+  "dimension": "minecraft:overworld",
+  "minTier": 1,
+  "output": {
+    "stack": {
+      "count": 1,
+      "id": "thaumaturge:deepslate_ore_amber"
+    },
+    "weight": 2.5
+  }
+}

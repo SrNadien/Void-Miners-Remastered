@@ -8,6 +8,8 @@ import nadiendev.voidminersremastered.world.block.ModifierBlock;
 import nadiendev.voidminersremastered.init.ModBlockEntities;
 import nadiendev.voidminersremastered.util.MiscUtil;
 import nadiendev.voidminersremastered.world.multiblock.SolarMultiblocks;
+import nadiendev.voidminersremastered.world.multiblock.MultiBlockMatchResult;
+import nadiendev.voidminersremastered.world.multiblock.MultiBlockPattern;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -28,8 +30,6 @@ import net.minecraft.world.level.block.state.pattern.BlockInWorld;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.energy.IEnergyStorage;
 import org.jetbrains.annotations.Nullable;
-import org.mangorage.mangomultiblock.core.manager.RegisteredMultiBlockPattern;
-import org.mangorage.mangomultiblock.core.misc.MultiblockMatchResult;
 
 import java.util.*;
 
@@ -442,14 +442,14 @@ public class SolarControllerBE extends BlockEntity {
             return;
         }
 
-        RegisteredMultiBlockPattern pattern = SolarMultiblocks.MANAGER.getStructure(structure);
+        MultiBlockPattern pattern = SolarMultiblocks.MANAGER.getStructure(structure);
         if (pattern == null) {
             return;
         }
 
-        MultiblockMatchResult result = pattern.pattern().matchesWithResult(pLevel, pPos, Rotation.NONE);
+        MultiBlockMatchResult result = pattern.matchesWithResult(pLevel, pPos, Rotation.NONE);
         if (result == null) {
-            result = pattern.pattern().matchesWithResult(pLevel, pPos, Rotation.CLOCKWISE_90);
+            result = pattern.matchesWithResult(pLevel, pPos, Rotation.CLOCKWISE_90);
         }
 
         if (result == null) {

@@ -95,7 +95,6 @@ dependencies {
     compileOnly("dev.latvian.mods:rhino:$rhino_version")
     implementation ("dev.latvian.mods:kubejs-neoforge:${kubejs_version}")
 
-    implementation "curse.maven:mangos-multiblock-library-revived-1406189:${mangomultiblock_version_id}"
 
     implementation "curse.maven:jei-238222:8470023"
     implementation "curse.maven:athena-841890:8061947"
@@ -129,8 +128,6 @@ tasks.withType(ProcessResources).configureEach {
         mod_authors: mod_authors,
         mod_description: mod_description,
         kubejs_version: kubejs_version,
-        mangomultiblock_version_id: mangomultiblock_version_id,
-        mangomultiblock_version: mangomultiblock_version,
     ]
 
     inputs.properties replaceProperties

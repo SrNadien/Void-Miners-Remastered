@@ -16,12 +16,12 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Set up JDK 21
-        uses: actions/setup-java@v6
+        uses: actions/setup-java@v4
         with:
           java-version: "21"
           distribution: "temurin"
@@ -34,7 +34,7 @@ jobs:
           echo "release_version=${VERSION}-build.${{ github.run_number }}" >> $GITHUB_OUTPUT
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v6
+        uses: gradle/actions/setup-gradle@v4
 
       - name: Make gradlew executable
         run: chmod +x gradlew
@@ -48,7 +48,7 @@ jobs:
           git push origin v${{ steps.gradle_props.outputs.release_version }}
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v3
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.gradle_props.outputs.release_version }}
           name: VoidMinersRemastered ${{ steps.gradle_props.outputs.release_version }}
@@ -57,3 +57,55 @@ jobs:
             build/libs/*.jar
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Publishes the jar to CurseForge only when the pushed commit message contains [curseforge], optionally with a
+      # release type: [curseforge], [curseforge beta] or [curseforge alpha]. Needs the CURSEFORGE_TOKEN secret and the
+      # CURSEFORGE_PROJECT_ID variable of the repository.
+      - name: Publish to CurseForge
+        if: ${{ contains(github.event.head_commit.message, '[curseforge') }}
+        env:
+          CURSEFORGE_TOKEN: ${{ secrets.CURSEFORGE_TOKEN }}
+          CURSEFORGE_PROJECT_ID: ${{ vars.CURSEFORGE_PROJECT_ID }}
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+          MOD_VERSION: ${{ steps.gradle_props.outputs.mod_version }}
+        run: |
+          set -euo pipefail
+          : "${CURSEFORGE_TOKEN:?Add the CURSEFORGE_TOKEN secret to the repository}"
+          : "${CURSEFORGE_PROJECT_ID:?Add the CURSEFORGE_PROJECT_ID variable to the repository}"
+          MC="1.21.1"
+          JAVA="Java 21"
+
+          RELEASE_TYPE=release
+          if [[ "$COMMIT_MESSAGE" =~ \[curseforge\ (alpha|beta|release)\] ]]; then RELEASE_TYPE="${BASH_REMATCH[1]}"; fi
+
+          # CHANGELOG.md only holds the notes of the current version, under a title line
+          CHANGELOG=$(awk '/^# /{ next } 1' CHANGELOG.md)
+          [ -n "$CHANGELOG" ] || CHANGELOG="Void Miners Remastered $MOD_VERSION for Minecraft $MC."
+
+          # A jar that is already on CurseForge (marked with a tag once it was uploaded) is not uploaded again
+          tag="curseforge-neoforge-$MC-$MOD_VERSION"
+          if git rev-parse -q --verify "refs/tags/$tag" > /dev/null; then
+            echo "NeoForge $MC $MOD_VERSION is already on CurseForge (tag $tag), not uploading it again"
+            exit 0
+          fi
+
+          jar=$(ls build/libs/*.jar | grep -v -- '-sources' | head -n1)
+          name=$(basename "$jar" .jar)
+
+          metadata=$(jq -nc \
+            --arg changelog "$CHANGELOG" \
+            --arg type "$RELEASE_TYPE" \
+            --arg name "$name" \
+            --arg mc "$MC" \
+            --arg java "$JAVA" \
+            '{changelog: $changelog, changelogType: "markdown", releaseType: $type, displayName: $name,
+              gameVersionNames: [$mc, "NeoForge", $java, "Client", "Server"]}')
+
+          echo "Uploading $jar to CurseForge as a $RELEASE_TYPE for NeoForge $MC ($JAVA)"
+          curl -sS --fail-with-body -X POST \
+            "https://minecraft.curseforge.com/api/projects/$CURSEFORGE_PROJECT_ID/upload-file" \
+            -H "X-Api-Token: $CURSEFORGE_TOKEN" \
+            -F "metadata=$metadata" -F "file=@$jar"
+          echo
+          git tag "$tag"
+          git push origin "$tag"
