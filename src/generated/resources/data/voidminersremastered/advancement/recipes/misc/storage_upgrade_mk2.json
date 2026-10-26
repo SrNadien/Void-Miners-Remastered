@@ -5,7 +5,7 @@
       "conditions": {
         "items": [
           {
-            "items": "voidminersremastered:max_storage_upgrade_t2"
+            "items": "voidminersremastered:storage_upgrade_mk1"
           }
         ]
       },
@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "voidminersremastered:max_storage_upgrade_t3"
+        "recipe": "voidminersremastered:storage_upgrade_mk2"
       },
       "trigger": "minecraft:recipe_unlocked"
     }
@@ -26,7 +26,7 @@
   ],
   "rewards": {
     "recipes": [
-      "voidminersremastered:max_storage_upgrade_t3"
+      "voidminersremastered:storage_upgrade_mk2"
     ]
   }
 }

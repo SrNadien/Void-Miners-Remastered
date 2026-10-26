@@ -14,6 +14,8 @@ import nadiendev.voidminersremastered.server.recipe.WeightedStack;
 import nadiendev.voidminersremastered.util.ListUtil;
 import nadiendev.voidminersremastered.util.MiscUtil;
 import nadiendev.voidminersremastered.world.multiblock.MinerMultiblocks;
+import nadiendev.voidminersremastered.world.multiblock.MultiBlockMatchResult;
+import nadiendev.voidminersremastered.world.multiblock.MultiBlockPattern;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -51,8 +53,6 @@ import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.neoforged.neoforge.transfer.item.ItemStacksResourceHandler;
 import net.neoforged.neoforge.transfer.item.ItemUtil;
 import org.jetbrains.annotations.Nullable;
-import nadiendev.mangomultiblock.core.manager.RegisteredMultiBlockPattern;
-import nadiendev.mangomultiblock.core.misc.MultiblockMatchResult;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -853,14 +853,14 @@ public class MinerControllerBE extends BlockEntity {
             return;
         }
 
-        RegisteredMultiBlockPattern pattern = MinerMultiblocks.MANAGER.getStructure(structure);
+        MultiBlockPattern pattern = MinerMultiblocks.MANAGER.getStructure(structure);
         if (pattern == null) {
             return;
         }
 
-        MultiblockMatchResult result = pattern.pattern().matchesWithResult(pLevel, pPos, Rotation.NONE);
+        MultiBlockMatchResult result = pattern.matchesWithResult(pLevel, pPos, Rotation.NONE);
         if (result == null) {
-            result = pattern.pattern().matchesWithResult(pLevel, pPos, Rotation.CLOCKWISE_90);
+            result = pattern.matchesWithResult(pLevel, pPos, Rotation.CLOCKWISE_90);
         }
 
         if (result == null) {

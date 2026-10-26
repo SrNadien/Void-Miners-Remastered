@@ -38,10 +38,3 @@ description='''${mod_description}'''
     ordering="AFTER"
     side="BOTH"
 
-# Built from github.com/SrNadien/Mango-Multiblock-Revived branch Neo/26.1.2 (reports version 4.0.0).
-[[dependencies.${mod_id}]]
-    modId="mangomultiblock"
-    type="required"
-    versionRange="[${mangomultiblock_version},)"
-    ordering="AFTER"
-    side="BOTH"

@@ -36,6 +36,8 @@ public class ModCompatRecipeProvider implements DataProvider {
             Map.entry("zinc", 6f)
     );
 
+    private static final String[] THAUMATURGE_ASPECTS = {"aer", "aqua", "ignis", "ordo", "perditio", "terra"};
+
     private final PackOutput.PathProvider pathProvider;
     private final Map<Identifier, JsonObject> recipes = new LinkedHashMap<>();
 
@@ -48,6 +50,17 @@ public class ModCompatRecipeProvider implements DataProvider {
         allTheOres();
         oritech();
         otherMods();
+        thaumaturge();
+    }
+
+    private void thaumaturge() {
+        withDeepslate("thaumaturge", "thaumaturge:ore_amber", "thaumaturge:deepslate_ore_amber", 5f, 1);
+        withDeepslate("thaumaturge", "thaumaturge:ore_cinnabar", "thaumaturge:deepslate_ore_cinnabar", 4f, 1);
+        withDeepslate("thaumaturge", "thaumaturge:ore_quartz", "thaumaturge:deepslate_ore_quartz", 5f, 1);
+
+        for (String aspect : THAUMATURGE_ASPECTS) {
+            crystal("thaumaturge", "thaumaturge:essentia_crystal", "thaumaturge:" + aspect, aspect, 3f, 2, OVERWORLD, MINING);
+        }
     }
 
     private void allTheModium() {
@@ -120,6 +133,21 @@ public class ModCompatRecipeProvider implements DataProvider {
     }
 
     private void ore(String modId, String item, float weight, int minTier, String... dimensions) {
+        add(modId, item, null, "", weight, minTier, dimensions);
+    }
+
+    private void crystal(String modId, String item, String aspect, String suffix, float weight, int minTier, String... dimensions) {
+        JsonObject instance = new JsonObject();
+        instance.addProperty("aspect", aspect);
+        instance.addProperty("amount", 1);
+
+        JsonObject components = new JsonObject();
+        components.add("thaumaturge:crystal_aspect", instance);
+
+        add(modId, item, components, "_" + suffix, weight, minTier, dimensions);
+    }
+
+    private void add(String modId, String item, JsonObject components, String idSuffix, float weight, int minTier, String... dimensions) {
         for (String dimension : dimensions) {
             Identifier itemId = Identifier.parse(item);
             Identifier dimensionId = Identifier.parse(dimension);
@@ -141,6 +169,9 @@ public class ModCompatRecipeProvider implements DataProvider {
             JsonObject stack = new JsonObject();
             stack.addProperty("count", 1);
             stack.addProperty("id", itemId.toString());
+            if (components != null) {
+                stack.add("components", components.deepCopy());
+            }
 
             JsonObject output = new JsonObject();
             output.add("stack", stack);
@@ -155,7 +186,7 @@ public class ModCompatRecipeProvider implements DataProvider {
 
             Identifier recipeId = Identifier.fromNamespaceAndPath(
                     VoidMinersRemastered.MODID,
-                    "compat/" + dimensionId.getPath() + "/tier" + minTier + "_miner/" + itemId.getNamespace() + "/" + itemId.getPath()
+                    "compat/" + dimensionId.getPath() + "/tier" + minTier + "_miner/" + itemId.getNamespace() + "/" + itemId.getPath() + idSuffix
             );
 
             if (recipes.put(recipeId, json) != null) {

@@ -4,7 +4,7 @@
   "key": {
     "C": "voidminersremastered:ultimate_stellar_core",
     "S": "minecraft:nether_star",
-    "T": "voidminersremastered:max_storage_upgrade_t2"
+    "T": "voidminersremastered:storage_upgrade_mk2"
   },
   "pattern": [
     "CTC",
@@ -12,6 +12,6 @@
     "CCC"
   ],
   "result": {
-    "id": "voidminersremastered:max_storage_upgrade_t3"
+    "id": "voidminersremastered:storage_upgrade_mk3"
   }
 }

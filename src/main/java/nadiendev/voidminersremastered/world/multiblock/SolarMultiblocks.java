@@ -8,8 +8,6 @@ import nadiendev.voidminersremastered.util.MiscUtil;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.pattern.BlockInWorld;
-import nadiendev.mangomultiblock.core.SimpleMultiBlockAislePatternBuilder;
-import nadiendev.mangomultiblock.core.manager.MultiBlockManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,12 +17,12 @@ import java.util.function.Supplier;
 
 public class SolarMultiblocks {
 
-    public static final MultiBlockManager MANAGER = MultiBlockManager.getOrCreate(VoidMinersRemastered.MODID, "voidminers_solars");
+    public static final MultiBlockManager MANAGER = new MultiBlockManager(VoidMinersRemastered.MODID);
 
     // IMPORTANT: variable to stop duplicate registration
     private static boolean INITIALIZED = false;
 
-    public static final SimpleMultiBlockAislePatternBuilder RUBETINE = createAccessiblePattern(
+    public static final MultiBlockAislePatternBuilder RUBETINE = createAccessiblePattern(
             VoidMinersRemastered.MODID + ":solar_rubetine",
             List.of(
                     List.of(
@@ -67,7 +65,7 @@ public class SolarMultiblocks {
             )
     );
 
-    public static final SimpleMultiBlockAislePatternBuilder AURANTIUM = createAccessiblePattern(
+    public static final MultiBlockAislePatternBuilder AURANTIUM = createAccessiblePattern(
             VoidMinersRemastered.MODID + ":solar_aurantium",
             List.of(
                     List.of(
@@ -129,7 +127,7 @@ public class SolarMultiblocks {
             )
     );
 
-    public static final SimpleMultiBlockAislePatternBuilder CITRINETINE = createAccessiblePattern(
+    public static final MultiBlockAislePatternBuilder CITRINETINE = createAccessiblePattern(
             VoidMinersRemastered.MODID + ":solar_citrinetine",
             List.of(
                     List.of(
@@ -200,7 +198,7 @@ public class SolarMultiblocks {
             )
     );
 
-    public static final SimpleMultiBlockAislePatternBuilder VERDIUM = createAccessiblePattern(
+    public static final MultiBlockAislePatternBuilder VERDIUM = createAccessiblePattern(
             VoidMinersRemastered.MODID + ":solar_verdium",
             List.of(
                     List.of(
@@ -283,7 +281,7 @@ public class SolarMultiblocks {
             )
     );
 
-    public static final SimpleMultiBlockAislePatternBuilder AZURINE = createAccessiblePattern(
+    public static final MultiBlockAislePatternBuilder AZURINE = createAccessiblePattern(
             VoidMinersRemastered.MODID + ":solar_azurine",
             List.of(
                     List.of(
@@ -366,7 +364,7 @@ public class SolarMultiblocks {
             )
     );
 
-    public static final SimpleMultiBlockAislePatternBuilder CAERIUM = createAccessiblePattern(
+    public static final MultiBlockAislePatternBuilder CAERIUM = createAccessiblePattern(
             VoidMinersRemastered.MODID + ":solar_caerium",
             List.of(
                     List.of(
@@ -460,7 +458,7 @@ public class SolarMultiblocks {
             )
     );
 
-    public static final SimpleMultiBlockAislePatternBuilder AMETHYSTINE = createAccessiblePattern(
+    public static final MultiBlockAislePatternBuilder AMETHYSTINE = createAccessiblePattern(
             VoidMinersRemastered.MODID + ":solar_amethystine",
             List.of(
                     List.of(
@@ -554,7 +552,7 @@ public class SolarMultiblocks {
             )
     );
 
-    public static final SimpleMultiBlockAislePatternBuilder ROSARIUM = createAccessiblePattern(
+    public static final MultiBlockAislePatternBuilder ROSARIUM = createAccessiblePattern(
             VoidMinersRemastered.MODID + ":solar_rosarium",
             List.of(
                     List.of(
@@ -643,7 +641,7 @@ public class SolarMultiblocks {
             )
     );
 
-    public static final SimpleMultiBlockAislePatternBuilder ULTIMATE = createAccessiblePattern(
+    public static final MultiBlockAislePatternBuilder ULTIMATE = createAccessiblePattern(
             VoidMinersRemastered.MODID + ":solar_ultimate",
             List.of(
                     List.of(
@@ -777,8 +775,8 @@ public class SolarMultiblocks {
             )
     );
 
-    public static SimpleMultiBlockAislePatternBuilder createAccessiblePattern(String structure, List<List<String>> stringPattern, Map<Character, Predicate<BlockInWorld>> lookup, Map<Character, Supplier<BlockState>> blockProvider) {
-        SimpleMultiBlockAislePatternBuilder pattern = SimpleMultiBlockAislePatternBuilder.start();
+    public static MultiBlockAislePatternBuilder createAccessiblePattern(String structure, List<List<String>> stringPattern, Map<Character, Predicate<BlockInWorld>> lookup, Map<Character, Supplier<BlockState>> blockProvider) {
+        MultiBlockAislePatternBuilder pattern = MultiBlockAislePatternBuilder.start();
         List<List<List<BlockState>>> blocks = new ArrayList<>();
 
         for (List<String> strings : stringPattern) {
@@ -801,8 +799,6 @@ public class SolarMultiblocks {
         );
 
         lookup.forEach(pattern::where);
-
-        blockProvider.forEach(pattern::block);
 
         return pattern;
     }
